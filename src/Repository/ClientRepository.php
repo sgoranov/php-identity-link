@@ -3,8 +3,13 @@
 namespace App\Repository;
 
 use App\Entity\Client;
+use App\Entity\ClientSecret;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
+use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<Client>
@@ -14,35 +19,55 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Client[]    findAll()
  * @method Client[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ClientRepository extends ServiceEntityRepository
+class ClientRepository extends ServiceEntityRepository implements ClientRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Client::class);
     }
 
-//    /**
-//     * @return Client[] Returns an array of Client objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function getClientEntity($clientIdentifier): ?ClientEntityInterface
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.identifier = :val')
+            ->setParameter('val', $clientIdentifier)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 
-//    public function findOneBySomeField($value): ?Client
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    public function validateClient($clientIdentifier, $clientSecret = null, $grantType = null): bool
+    {
+//        ->innerJoin(Image::class, 'c', Join::WITH,
+//        'a.id = c.category AND c.isPublic = :isPublic
+//                AND (c.expirationDateTime IS NULL OR c.expirationDateTime >= :today)')
+
+
+        // TODO: Handle grant types
+
+        if ($clientSecret !== null) {
+
+        }
+
+
+        $result = $this->createQueryBuilder('t')
+            ->select('s')
+            ->innerJoin(ClientSecret::class, 's', Join::WITH, 's.client = t.id')
+            ->andWhere('t.isConfidential = :isConfidential')
+            ->setParameter('isConfidential', true)
+            ->andWhere('s.expiryDateTime >= :now')
+            ->setParameter('now', new DateTime())
+            ->getQuery()
+            ->getResult()
+        ;
+
+        /** @var ClientSecret $secret */
+        foreach ($result as $secret) {
+            if (password_verify($clientSecret, $secret->getSecret())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

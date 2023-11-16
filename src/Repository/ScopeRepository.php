@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\Scope;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<Scope>
@@ -14,7 +16,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Scope[]    findAll()
  * @method Scope[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ScopeRepository extends ServiceEntityRepository
+class ScopeRepository extends ServiceEntityRepository implements ScopeRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -45,4 +47,13 @@ class ScopeRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    public function getScopeEntityByIdentifier($identifier)
+    {
+        // TODO: Implement getScopeEntityByIdentifier() method.
+    }
+
+    public function finalizeScopes(array $scopes, $grantType, ClientEntityInterface $clientEntity, $userIdentifier = null)
+    {
+        // TODO: Implement finalizeScopes() method.
+    }
 }

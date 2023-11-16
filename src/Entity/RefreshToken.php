@@ -7,7 +7,6 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
-use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: RefreshTokenRepository::class)]
 class RefreshToken implements RefreshTokenEntityInterface
@@ -15,7 +14,7 @@ class RefreshToken implements RefreshTokenEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\Column(type: "uuid", unique: true)]
-    #[ORM\CustomIdGenerator(class: UuidV4::class)]
+    #[ORM\CustomIdGenerator(class: "doctrine.uuid_generator")]
     private ?string $id = null;
 
     #[ORM\Column]

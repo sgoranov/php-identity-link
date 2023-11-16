@@ -5,6 +5,9 @@ namespace App\Repository;
 use App\Entity\AccessToken;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
+use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<AccessToken>
@@ -14,7 +17,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method AccessToken[]    findAll()
  * @method AccessToken[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class AccessTokenRepository extends ServiceEntityRepository
+class AccessTokenRepository extends ServiceEntityRepository implements AccessTokenRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -45,4 +48,23 @@ class AccessTokenRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null)
+    {
+        // TODO: Implement getNewToken() method.
+    }
+
+    public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity)
+    {
+        // TODO: Implement persistNewAccessToken() method.
+    }
+
+    public function revokeAccessToken($tokenId)
+    {
+        // TODO: Implement revokeAccessToken() method.
+    }
+
+    public function isAccessTokenRevoked($tokenId)
+    {
+        // TODO: Implement isAccessTokenRevoked() method.
+    }
 }

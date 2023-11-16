@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\RefreshToken;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
+use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<RefreshToken>
@@ -14,7 +16,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method RefreshToken[]    findAll()
  * @method RefreshToken[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class RefreshTokenRepository extends ServiceEntityRepository
+class RefreshTokenRepository extends ServiceEntityRepository implements RefreshTokenRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -45,4 +47,23 @@ class RefreshTokenRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    public function getNewRefreshToken()
+    {
+        // TODO: Implement getNewRefreshToken() method.
+    }
+
+    public function persistNewRefreshToken(RefreshTokenEntityInterface $refreshTokenEntity)
+    {
+        // TODO: Implement persistNewRefreshToken() method.
+    }
+
+    public function revokeRefreshToken($tokenId)
+    {
+        // TODO: Implement revokeRefreshToken() method.
+    }
+
+    public function isRefreshTokenRevoked($tokenId)
+    {
+        // TODO: Implement isRefreshTokenRevoked() method.
+    }
 }

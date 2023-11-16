@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use League\OAuth2\Server\Entities\UserEntityInterface;
-use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -14,24 +13,27 @@ class User implements UserEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\Column(type: "uuid", unique: true)]
-    #[ORM\CustomIdGenerator(class: UuidV4::class)]
+    #[ORM\CustomIdGenerator(class: "doctrine.uuid_generator")]
     private ?string $id = null;
 
     #[ORM\ManyToOne(targetEntity: Client::class)]
     private Client $client;
 
     #[ORM\Column(length: 100)]
-    private ?string $username;
+    private string $username;
 
     #[ORM\Column(length: 100)]
-    private ?string $password;
+    private string $password;
 
     public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getIdentifier(): ?string
+    /**
+     * @return string
+     */
+    public function getIdentifier(): string
     {
         return $this->getId();
     }

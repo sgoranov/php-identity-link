@@ -10,7 +10,6 @@ use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
-use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: AccessTokenRepository::class)]
 class AccessToken implements AccessTokenEntityInterface
@@ -20,7 +19,7 @@ class AccessToken implements AccessTokenEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\Column(type: "uuid", unique: true)]
-    #[ORM\CustomIdGenerator(class: UuidV4::class)]
+    #[ORM\CustomIdGenerator(class: "doctrine.uuid_generator")]
     private ?string $id = null;
 
     #[ORM\Column]

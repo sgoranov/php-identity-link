@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\AuthCode;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
+use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<AuthCode>
@@ -14,7 +16,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method AuthCode[]    findAll()
  * @method AuthCode[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class AuthCodeRepository extends ServiceEntityRepository
+class AuthCodeRepository extends ServiceEntityRepository implements AuthCodeRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -45,4 +47,23 @@ class AuthCodeRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    public function getNewAuthCode()
+    {
+        // TODO: Implement getNewAuthCode() method.
+    }
+
+    public function persistNewAuthCode(AuthCodeEntityInterface $authCodeEntity)
+    {
+        // TODO: Implement persistNewAuthCode() method.
+    }
+
+    public function revokeAuthCode($codeId)
+    {
+        // TODO: Implement revokeAuthCode() method.
+    }
+
+    public function isAuthCodeRevoked($codeId)
+    {
+        // TODO: Implement isAuthCodeRevoked() method.
+    }
 }

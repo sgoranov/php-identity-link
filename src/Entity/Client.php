@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\ClientRepository;
 use Doctrine\ORM\Mapping as ORM;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
-use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
 class Client implements ClientEntityInterface
@@ -13,36 +12,34 @@ class Client implements ClientEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\Column(type: "uuid", unique: true)]
-    #[ORM\CustomIdGenerator(class: UuidV4::class)]
-    private ?string $id = null;
+    #[ORM\CustomIdGenerator(class: "doctrine.uuid_generator")]
+    private string $id;
 
     #[ORM\Column(length: 100)]
-    private ?string $name = null;
+    private string $identifier;
+
+    #[ORM\Column(length: 100)]
+    private string $name;
 
     #[ORM\Column(length: 500)]
     private ?string $redirectUri = null;
 
     #[ORM\Column]
-    private ?bool $isConfidential = true;
+    private bool $isConfidential = true;
 
     public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getIdentifier(): ?string
+    public function getIdentifier(): string
     {
-        return $this->getId();
+        return $this->identifier;
     }
 
-    public function getName(): ?string
+    public function setIdentifier(string $identifier): void
     {
-        return $this->name;
-    }
-
-    public function setName(?string $name): void
-    {
-        $this->name = $name;
+        $this->identifier = $identifier;
     }
 
     public function getRedirectUri(): ?string
@@ -63,5 +60,15 @@ class Client implements ClientEntityInterface
     public function isConfidential(): ?bool
     {
         return $this->isConfidential;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 }
