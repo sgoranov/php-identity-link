@@ -15,6 +15,16 @@ parameters:
     enable_auth_code_grant: true
     enable_implicit_grant: false
 
+    ad_enabled: false
+    ad_domain_controllers: [ 'ACME-DC01.corp.acme.org' ]
+    ad_base_dn: 'dc=corp,dc=acme,dc=org'
+    ad_port: 389
+    ad_admin_username: 'admin@corp.acme.org'
+    ad_admin_password: 'password'
+    ad_query_fetch_users: '(&(objectCategory=person)(objectClass=user))'
+    ad_login_attribute: 'sAMAccountName'
+    ad_use_ssl: false
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -31,6 +41,13 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\OAuth\UserRepositoryFactory:
+        calls:
+            - setIsActiveDirectoryEnabled: ['%ad_enabled%']
+
+    League\OAuth2\Server\Repositories\UserRepositoryInterface:
+        factory: ['@App\OAuth\UserRepositoryFactory', 'create']
 
     App\OAuth\AuthorizationServerFactory:
         calls:
@@ -56,3 +73,11 @@ services:
 
     Psr\Http\Message\ResponseFactoryInterface:
         class: Nyholm\Psr7\Factory\Psr17Factory
+
+    League\Event\Emitter:
+        class: League\Event\Emitter
+        calls:
+            - useListenerProvider: ['@App\Service\SymfonyLeagueEventListenerProvider']
+
+    App\Tests\Fixtures\:
+        resource: '%kernel.project_dir%/tests/Fixtures/'

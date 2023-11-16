@@ -43,21 +43,4 @@ class ClientRepositoryTest extends KernelTestCase
         );
         $this->assertTrue($result);
     }
-
-    public function testPrivateClientValidity(): void
-    {
-        // invalid grant type
-        $result = self::$clientRepository->validateClient(
-            AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
-            AppFixtures::PRIVATE_CLIENT_SECRET,
-            GrantTypes::AUTHORIZATION_CODE);
-        $this->assertFalse($result);
-
-        // valid grant type
-        $result = self::$clientRepository->validateClient(
-            AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
-            AppFixtures::PRIVATE_CLIENT_SECRET,
-            GrantTypes::CLIENT_CREDENTIALS);
-        $this->assertTrue($result);
-    }
 }

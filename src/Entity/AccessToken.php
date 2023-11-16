@@ -26,8 +26,8 @@ class AccessToken implements AccessTokenEntityInterface
     #[ORM\Column(type: "text")]
     private string $identifier;
 
-    #[ORM\Column]
-    private string $userIdentifier;
+    #[ORM\Column(nullable: true)]
+    private ?string $userIdentifier;
 
     #[ORM\ManyToOne(targetEntity: Client::class)]
     private Client $client;

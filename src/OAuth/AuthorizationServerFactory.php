@@ -3,18 +3,19 @@ declare(strict_types=1);
 
 namespace App\OAuth;
 
-use App\ActiveDirectory\Repository\UserRepository;
 use App\Repository\AccessTokenRepository;
 use App\Repository\AuthCodeRepository;
 use App\Repository\ClientRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Repository\ScopeRepository;
+use League\Event\Emitter;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\ImplicitGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use League\OAuth2\Server\Repositories\UserRepositoryInterface;
 
 class AuthorizationServerFactory
 {
@@ -39,12 +40,13 @@ class AuthorizationServerFactory
     private bool $enableImplicitGrant;
 
     public function __construct(
-        readonly AccessTokenRepository  $accessTokenRepository,
-        readonly AuthCodeRepository     $authCodeRepository,
-        readonly ClientRepository       $clientRepository,
+        readonly AccessTokenRepository $accessTokenRepository,
+        readonly AuthCodeRepository $authCodeRepository,
+        readonly ClientRepository $clientRepository,
         readonly RefreshTokenRepository $refreshTokenRepository,
-        readonly ScopeRepository        $scopeRepository,
-        readonly UserRepository         $userRepository,
+        readonly ScopeRepository $scopeRepository,
+        readonly UserRepositoryInterface $userRepository,
+        readonly Emitter $emitter,
     )
     {
     }
@@ -108,6 +110,8 @@ class AuthorizationServerFactory
             $this->privateKey,
             $this->encryptionKey
         );
+
+        $server->setEmitter($this->emitter);
 
         if ($this->enableClientCredentialsGrant) {
             $grantType = new ClientCredentialsGrant();

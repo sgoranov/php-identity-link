@@ -33,7 +33,7 @@ class User implements UserEntityInterface
      */
     public function getIdentifier(): string
     {
-        return $this->getId();
+        return $this->getUsername();
     }
 
     public function getUsername(): ?string

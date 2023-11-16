@@ -13,6 +13,6 @@ class User implements UserEntityInterface
      */
     public function getIdentifier()
     {
-        // TODO: Implement getIdentifier() method.
+        return null;
     }
 }

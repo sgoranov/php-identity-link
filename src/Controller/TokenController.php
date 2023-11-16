@@ -49,8 +49,12 @@ class TokenController extends AbstractController
 
         } catch (OAuthServerException $exception) {
 
+            // TODO: logging
+
             $response = $exception->generateHttpResponse($psrResponse);
         }
+
+        // TODO: logging
 
         return $this->httpFoundationFactory->createResponse($response);
     }

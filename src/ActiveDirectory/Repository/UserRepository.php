@@ -14,5 +14,7 @@ class UserRepository implements UserRepositoryInterface
     public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity): ?User
     {
         // TODO: Implement getUserEntityByUserCredentials() method.
+
+        return null;
     }
 }

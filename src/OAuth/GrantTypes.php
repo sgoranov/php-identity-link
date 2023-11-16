@@ -9,6 +9,7 @@ class GrantTypes
     const PASSWORD = 'password';
     const AUTHORIZATION_CODE = 'authorization_code';
     const REFRESH_TOKEN = 'refresh_token';
+    const IMPLICIT = 'implicit';
 
     public static function getSupportedGrantTypes(): array
     {
@@ -17,6 +18,7 @@ class GrantTypes
             self::PASSWORD,
             self::AUTHORIZATION_CODE,
             self::REFRESH_TOKEN,
+            self::IMPLICIT,
         ];
     }
 }

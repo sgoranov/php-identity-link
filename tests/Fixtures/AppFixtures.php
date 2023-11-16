@@ -8,8 +8,10 @@ use App\Entity\AuthCode;
 use App\Entity\Client;
 use App\Entity\ClientSecret;
 use App\Entity\Scope;
+use App\Entity\User;
 use App\OAuth\GrantTypes;
 use App\OAuth\Scopes;
+use App\Service\PasswordHashGenerator;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\Attribute\When;
@@ -28,6 +30,7 @@ class AppFixtures extends Fixture
     const AUTH_CODE_IDENTIFIER = '000d19bd-4be7-4ce6-ba52-ab7575ffd840';
 
     const USER_IDENTIFIER = '7c1b7d1b-f624-4966-8f2a-e63ddfc34dba';
+    const USER_PASSWORD = 'f1080c74-ace7-44e8-8512-d2917d6dcde6';
 
     const ACCESS_TOKEN_IDENTIFIER = '6fbc4538-e365-479b-84d9-c881f3259c3f';
 
@@ -49,15 +52,27 @@ class AppFixtures extends Fixture
         $client->setIdentifier(self::PRIVATE_CLIENT_IDENTIFIER);
         $client->setRedirectUri(self::PRIVATE_CLIENT_REDIRECT_URI);
         $client->setIsConfidential(true);
-        $client->setGrantTypes([GrantTypes::CLIENT_CREDENTIALS]);
+        $client->setGrantTypes([
+            GrantTypes::CLIENT_CREDENTIALS,
+            GrantTypes::PASSWORD,
+            GrantTypes::AUTHORIZATION_CODE,
+            GrantTypes::REFRESH_TOKEN,
+            GrantTypes::IMPLICIT,
+        ]);
         $client->setScopes([]);
         $manager->persist($client);
 
         $secret = new ClientSecret();
         $secret->setClient($client);
-        $secret->setSecret(password_hash(self::PRIVATE_CLIENT_SECRET, PASSWORD_BCRYPT, ["cost" => 10]));
+        $secret->setSecret(PasswordHashGenerator::create(self::PRIVATE_CLIENT_SECRET));
         $secret->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
         $manager->persist($secret);
+
+        // User
+        $user = new User();
+        $user->setPassword(PasswordHashGenerator::create(self::USER_PASSWORD));
+        $user->setUsername(self::USER_IDENTIFIER);
+        $manager->persist($user);
 
         // auth code
         $code = new AuthCode();

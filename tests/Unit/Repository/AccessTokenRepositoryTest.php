@@ -32,6 +32,9 @@ class AccessTokenRepositoryTest extends KernelTestCase
 
         $token = self::$accessTokenRepository->getNewToken($client, [], AppFixtures::USER_IDENTIFIER);
         $this->assertEquals(AppFixtures::PRIVATE_CLIENT_IDENTIFIER, $token->getClient()->getIdentifier());
+
+        $token = self::$accessTokenRepository->getNewToken($client, [], null);
+        $this->assertNull($token->getUserIdentifier());
     }
 
     public function testRevokeAccessToken(): void
