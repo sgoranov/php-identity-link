@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\AuthCode;
+use App\Repository\Trait\RevocationTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
@@ -18,52 +19,32 @@ use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
  */
 class AuthCodeRepository extends ServiceEntityRepository implements AuthCodeRepositoryInterface
 {
+    use RevocationTrait;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, AuthCode::class);
     }
 
-//    /**
-//     * @return AuthCode[] Returns an array of AuthCode objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('a.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?AuthCode
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
-    public function getNewAuthCode()
+    public function getNewAuthCode(): AuthCode
     {
-        // TODO: Implement getNewAuthCode() method.
+        return new AuthCode();
     }
 
     public function persistNewAuthCode(AuthCodeEntityInterface $authCodeEntity)
     {
-        // TODO: Implement persistNewAuthCode() method.
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist($authCodeEntity);
+        $entityManager->flush();
     }
 
     public function revokeAuthCode($codeId)
     {
-        // TODO: Implement revokeAuthCode() method.
+        $this->revoke($codeId);
     }
 
-    public function isAuthCodeRevoked($codeId)
+    public function isAuthCodeRevoked($codeId): bool
     {
-        // TODO: Implement isAuthCodeRevoked() method.
+        return $this->isRevoked($codeId);
     }
 }

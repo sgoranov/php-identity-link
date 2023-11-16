@@ -14,10 +14,7 @@ class User implements UserEntityInterface
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\CustomIdGenerator(class: "doctrine.uuid_generator")]
-    private ?string $id = null;
-
-    #[ORM\ManyToOne(targetEntity: Client::class)]
-    private Client $client;
+    private string $id;
 
     #[ORM\Column(length: 100)]
     private string $username;
@@ -56,15 +53,5 @@ class User implements UserEntityInterface
     public function setPassword(?string $password): void
     {
         $this->password = $password;
-    }
-
-    public function getClient(): Client
-    {
-        return $this->client;
-    }
-
-    public function setClient(Client $client): void
-    {
-        $this->client = $client;
     }
 }

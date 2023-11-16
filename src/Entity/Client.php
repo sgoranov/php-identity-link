@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Entity\Traits\ScopeTrait;
+use App\OAuth\GrantTypes;
 use App\Repository\ClientRepository;
 use Doctrine\ORM\Mapping as ORM;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
@@ -9,10 +11,7 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
 class Client implements ClientEntityInterface
 {
-    const GRANT_TYPE_CLIENT_CREDENTIALS = 'client_credentials';
-    const GRANT_TYPE_PASSWORD = 'password';
-    const GRANT_TYPE_AUTHORIZATION_CODE = 'authorization_code';
-    const GRANT_TYPE_REFRESH_TOKEN = 'refresh_token';
+    use ScopeTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
@@ -82,7 +81,7 @@ class Client implements ClientEntityInterface
 
     public function getGrantTypes(): array
     {
-        return json_decode($this->grantTypes, JSON_OBJECT_AS_ARRAY);
+        return json_decode($this->grantTypes, true);
     }
 
     public function setGrantTypes(array $grantTypes): void
@@ -90,12 +89,7 @@ class Client implements ClientEntityInterface
         $grantTypes = array_unique(array_values($grantTypes));
 
         foreach ($grantTypes as $grantType) {
-            if (!in_array($grantType, [
-                self::GRANT_TYPE_CLIENT_CREDENTIALS,
-                self::GRANT_TYPE_PASSWORD,
-                self::GRANT_TYPE_AUTHORIZATION_CODE,
-                self::GRANT_TYPE_REFRESH_TOKEN,
-            ])) {
+            if (!in_array($grantType, GrantTypes::getSupportedGrantTypes())) {
                 throw new \InvalidArgumentException(sprintf('Invalid grant type %s passed.', $grantType));
             }
         }

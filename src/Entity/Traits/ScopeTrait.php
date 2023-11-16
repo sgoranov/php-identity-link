@@ -34,7 +34,7 @@ trait ScopeTrait
         }
 
         $scopes = [];
-        foreach (json_decode($this->scopes) as $id) {
+        foreach (json_decode($this->scopes, true) as $id) {
             $scopes[] = new Scope($id);
         }
 

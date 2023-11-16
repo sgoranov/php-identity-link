@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Entity\Traits\RevocationTrait;
+use App\Entity\Traits\ScopeTrait;
 use App\Repository\RefreshTokenRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -11,6 +13,8 @@ use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
 #[ORM\Entity(repositoryClass: RefreshTokenRepository::class)]
 class RefreshToken implements RefreshTokenEntityInterface
 {
+    use ScopeTrait, RevocationTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\Column(type: "uuid", unique: true)]
@@ -22,9 +26,6 @@ class RefreshToken implements RefreshTokenEntityInterface
 
     #[ORM\Column]
     private DateTimeImmutable $expiryDateTime;
-
-    #[ORM\Column]
-    private bool $isRevoked = false;
 
     #[ORM\OneToOne(targetEntity: AccessToken::class)]
     private AccessToken $accessToken;
@@ -44,7 +45,7 @@ class RefreshToken implements RefreshTokenEntityInterface
         $this->identifier = $identifier;
     }
 
-    public function getExpiryDateTime()
+    public function getExpiryDateTime(): DateTimeImmutable
     {
         return $this->expiryDateTime;
     }
@@ -62,15 +63,5 @@ class RefreshToken implements RefreshTokenEntityInterface
     public function getAccessToken()
     {
         return $this->accessToken;
-    }
-
-    public function isRevoked(): bool
-    {
-        return $this->isRevoked;
-    }
-
-    public function setIsRevoked(bool $isRevoked): void
-    {
-        $this->isRevoked = $isRevoked;
     }
 }

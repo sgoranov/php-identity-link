@@ -3,8 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Client;
-use App\Entity\GrantType;
 use App\Entity\ClientSecret;
+use App\Entity\GrantType;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;

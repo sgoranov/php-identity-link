@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Traits\RevocationTrait;
 use App\Entity\Traits\ScopeTrait;
 use App\Repository\AccessTokenRepository;
 use DateTimeImmutable;
@@ -13,7 +14,7 @@ use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 #[ORM\Entity(repositoryClass: AccessTokenRepository::class)]
 class AccessToken implements AccessTokenEntityInterface
 {
-    use AccessTokenTrait, ScopeTrait;
+    use AccessTokenTrait, ScopeTrait, RevocationTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
@@ -33,9 +34,6 @@ class AccessToken implements AccessTokenEntityInterface
     #[ORM\Column]
     private DateTimeImmutable $expiryDateTime;
 
-    #[ORM\Column]
-    private bool $isRevoked = false;
-
     public function getId(): ?string
     {
         return $this->id;
@@ -51,7 +49,7 @@ class AccessToken implements AccessTokenEntityInterface
         $this->identifier = $identifier;
     }
 
-    public function getExpiryDateTime()
+    public function getExpiryDateTime(): DateTimeImmutable
     {
         return $this->expiryDateTime;
     }
@@ -80,15 +78,5 @@ class AccessToken implements AccessTokenEntityInterface
     public function setClient(ClientEntityInterface $client): void
     {
         $this->client = $client;
-    }
-
-    public function isRevoked(): bool
-    {
-        return $this->isRevoked;
-    }
-
-    public function setIsRevoked(bool $isRevoked): void
-    {
-        $this->isRevoked = $isRevoked;
     }
 }

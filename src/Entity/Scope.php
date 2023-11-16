@@ -2,23 +2,16 @@
 
 namespace App\Entity;
 
+use App\OAuth\Scopes;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 
 class Scope implements ScopeEntityInterface
 {
-    const SCOPE_OPENID = 'openid';
-    const SCOPE_PROFILE = 'profile';
-    const SCOPE_GROUPS = 'groups';
-
     private string $identifier;
 
     public function __construct(string $identifier)
     {
-        if (!in_array($identifier, [
-            self::SCOPE_OPENID,
-            self::SCOPE_PROFILE,
-            self::SCOPE_GROUPS,
-        ])) {
+        if (!in_array($identifier, Scopes::getSupportedAsString(), true)) {
             throw new \InvalidArgumentException(sprintf('Invalid scope %s passed.', $identifier));
         }
 
@@ -31,6 +24,11 @@ class Scope implements ScopeEntityInterface
     }
 
     public function getIdentifier(): string
+    {
+        return $this->identifier;
+    }
+
+    public function __toString(): string
     {
         return $this->identifier;
     }

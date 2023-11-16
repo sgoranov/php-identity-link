@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\AccessToken;
+use App\Repository\Trait\RevocationTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
@@ -19,12 +20,14 @@ use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
  */
 class AccessTokenRepository extends ServiceEntityRepository implements AccessTokenRepositoryInterface
 {
+    use RevocationTrait;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, AccessToken::class);
     }
 
-    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null)
+    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null): AccessToken
     {
         $token = new AccessToken();
         $token->setClient($clientEntity);
@@ -44,25 +47,11 @@ class AccessTokenRepository extends ServiceEntityRepository implements AccessTok
 
     public function revokeAccessToken($tokenId)
     {
-        $token = $this->findOneBy(['identifier' => $tokenId]);
-        if ($token === null) {
-            throw new \InvalidArgumentException('Invalid token identifier passed.');
-        }
-
-        $token->setIsRevoked(true);
-
-        $entityManager = $this->getEntityManager();
-        $entityManager->persist($token);
-        $entityManager->flush();
+        $this->revoke($tokenId);
     }
 
-    public function isAccessTokenRevoked($tokenId)
+    public function isAccessTokenRevoked($tokenId): bool
     {
-        $token = $this->findOneBy(['identifier' => $tokenId]);
-        if ($token === null) {
-            throw new \InvalidArgumentException('Invalid token identifier passed.');
-        }
-
-        return $token->isRevoked();
+        return $this->isRevoked($tokenId);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\RefreshToken;
+use App\Repository\Trait\RevocationTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
@@ -18,52 +19,35 @@ use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
  */
 class RefreshTokenRepository extends ServiceEntityRepository implements RefreshTokenRepositoryInterface
 {
+    use RevocationTrait;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, RefreshToken::class);
     }
 
-//    /**
-//     * @return RefreshToken[] Returns an array of RefreshToken objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('r.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?RefreshToken
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
-    public function getNewRefreshToken()
+    public function getNewRefreshToken(): RefreshToken
     {
-        // TODO: Implement getNewRefreshToken() method.
+        $token = new RefreshToken();
+        $token->setIsRevoked(false);
+
+        return $token;
     }
 
     public function persistNewRefreshToken(RefreshTokenEntityInterface $refreshTokenEntity)
     {
-        // TODO: Implement persistNewRefreshToken() method.
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist($refreshTokenEntity);
+        $entityManager->flush();
     }
 
     public function revokeRefreshToken($tokenId)
     {
-        // TODO: Implement revokeRefreshToken() method.
+        $this->revoke($tokenId);
     }
 
-    public function isRefreshTokenRevoked($tokenId)
+    public function isRefreshTokenRevoked($tokenId): bool
     {
-        // TODO: Implement isRefreshTokenRevoked() method.
+        return $this->isRevoked($tokenId);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Traits\RevocationTrait;
 use App\Entity\Traits\ScopeTrait;
 use App\Repository\AuthCodeRepository;
 use DateTimeImmutable;
@@ -13,7 +14,7 @@ use League\OAuth2\Server\Entities\Traits\AuthCodeTrait;
 #[ORM\Entity(repositoryClass: AuthCodeRepository::class)]
 class AuthCode implements AuthCodeEntityInterface
 {
-    use AuthCodeTrait, ScopeTrait;
+    use AuthCodeTrait, ScopeTrait, RevocationTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
@@ -51,7 +52,7 @@ class AuthCode implements AuthCodeEntityInterface
         $this->identifier = $identifier;
     }
 
-    public function getExpiryDateTime()
+    public function getExpiryDateTime(): DateTimeImmutable
     {
         return $this->expiryDateTime;
     }
