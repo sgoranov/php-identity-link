@@ -26,7 +26,7 @@
  */
 declare(strict_types=1);
 
-namespace App\Tests\Application\OAuth2;
+namespace App\Tests\Application;
 
 use App\OAuth\GrantTypes;
 use App\Repository\AuthCodeRepository;
@@ -40,14 +40,14 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouterInterface;
 
-final class TokenEndpointTest extends WebTestCase
+final class TokenControllerTest extends WebTestCase
 {
     public function testSuccessfulClientCredentialsRequest(): void
     {
         $client = static::createClient();
         $eventDispatcher = $client->getContainer()->get(EventDispatcherInterface::class);
         $router = $client->getContainer()->get(RouterInterface::class);
-        
+
         $accessToken = null;
         $wasRequestAccessTokenEventDispatched = false;
         $eventDispatcher->addListener(RequestEvent::ACCESS_TOKEN_ISSUED, static function (RequestAccessTokenEvent $event) use (&$wasRequestAccessTokenEventDispatched, &$accessToken): void {

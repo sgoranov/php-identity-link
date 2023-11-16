@@ -55,7 +55,7 @@ class AuthAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        $params = $request->getSession()->get('auth_request_params');
+        $params = $request->getSession()->get('auth_request_params', []);
 
         return new RedirectResponse($this->router->generate('oauth2_auth', $params));
     }

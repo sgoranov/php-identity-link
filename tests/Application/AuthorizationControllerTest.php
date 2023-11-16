@@ -26,7 +26,7 @@
  */
 declare(strict_types=1);
 
-namespace App\Tests\Application\OAuth2;
+namespace App\Tests\Application;
 
 use App\Entity\AuthCode;
 use App\Repository\AuthCodeRepository;
@@ -35,13 +35,10 @@ use App\Security\User;
 use App\Tests\Fixtures\AppFixtures;
 use App\Tests\TestHelper;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RouterInterface;
 
-class AuthorizationEndpointTest extends WebTestCase
+class AuthorizationControllerTest extends WebTestCase
 {
-    // TODO: Test with public client
-
     public function testSuccessfulCodeRequest(): void
     {
         $client = static::createClient();
