@@ -1,0 +1,23 @@
+parameters:
+    private_key: 'file://%kernel.project_dir%/tests/resources/private.key'
+    encryption_key: '%kernel.project_dir%/tests/resources/encryption.key'
+    access_token_ttl: PT1H
+    refresh_token_ttl: P1M
+    auth_code_ttl: PT1M
+    enable_client_credentials_grant: true
+    enable_password_grant: true
+    enable_refresh_token_grant: true
+    enable_auth_code_grant: true
+    enable_implicit_grant: true
+
+services:
+    _defaults:
+        public: true
+
+    App\Repository\ScopeRepository:
+        public: true
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+    App\Tests\Fixtures\:
+        resource: '%kernel.project_dir%/tests/Fixtures/'

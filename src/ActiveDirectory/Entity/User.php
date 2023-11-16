@@ -8,6 +8,9 @@ use League\OAuth2\Server\Entities\UserEntityInterface;
 class User implements UserEntityInterface
 {
 
+    /**
+     * @return mixed
+     */
     public function getIdentifier()
     {
         // TODO: Implement getIdentifier() method.

@@ -48,9 +48,6 @@ services:
     League\OAuth2\Server\AuthorizationServer:
         factory: ['@App\OAuth\AuthorizationServerFactory', 'create']
 
-    App\Repository\ScopeRepository:
-        public: true
-
     Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface:
         class: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
 
@@ -59,8 +56,3 @@ services:
 
     Psr\Http\Message\ResponseFactoryInterface:
         class: Nyholm\Psr7\Factory\Psr17Factory
-
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
-    App\Tests\Fixtures\:
-        resource: '%kernel.project_dir%/tests/Fixtures/'
