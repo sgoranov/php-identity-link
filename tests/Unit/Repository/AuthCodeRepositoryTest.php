@@ -19,7 +19,7 @@ class AuthCodeRepositoryTest extends KernelTestCase
 
     public function testRevokeAuthCode(): void
     {
-        list($token) = self::$authCodeRepository->findBy(['identifier' => AppFixtures::AUTH_CODE_IDENTIFIER]);
+        list($token) = self::$authCodeRepository->findBy(['identifier' => AppFixtures::AUTH_CODE_PRIVATE_CLIENT_IDENTIFIER]);
         $this->assertFalse(self::$authCodeRepository->isAuthCodeRevoked($token->getIdentifier()));
 
         self::$authCodeRepository->revokeAuthCode($token->getIdentifier());

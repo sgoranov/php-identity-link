@@ -22,13 +22,16 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 class AppFixtures extends Fixture
 {
     const PUBLIC_CLIENT_IDENTIFIER = 'e48a3bce-773c-40b0-b50c-7ba11e41e062';
+    const PUBLIC_CLIENT_REDIRECT_URI = 'http://localhost/public';
 
     const PRIVATE_CLIENT_IDENTIFIER = '9d080b69-fe45-49ab-95fe-4a1c9b860ca3';
     const PRIVATE_CLIENT_SECRET = '2b740e1d-1655-4ad5-8f20-ee37e4e47f82';
     const PRIVATE_CLIENT_NAME = 'fb85b097-d07a-42fd-b0e5-f701a81082a3';
     const PRIVATE_CLIENT_REDIRECT_URI = 'http://localhost';
 
-    const AUTH_CODE_IDENTIFIER = '000d19bd-4be7-4ce6-ba52-ab7575ffd840';
+    const AUTH_CODE_PRIVATE_CLIENT_IDENTIFIER = '000d19bd-4be7-4ce6-ba52-ab7575ffd840';
+
+    const AUTH_CODE_PUBLIC_CLIENT_IDENTIFIER = '000d19bd-4be7-4ce6-ba52-ab7575ffd841';
 
     const USER_IDENTIFIER = '7c1b7d1b-f624-4966-8f2a-e63ddfc34dba';
     const USER_PASSWORD = 'f1080c74-ace7-44e8-8512-d2917d6dcde6';
@@ -38,15 +41,31 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
+        // User
+        $user = new User();
+        $user->setPassword(PasswordHashGenerator::create(self::USER_PASSWORD));
+        $user->setUsername(self::USER_IDENTIFIER);
+        $manager->persist($user);
+
         // public client
         $client = new Client();
         $client->setName('client_public');
         $client->setIdentifier(self::PUBLIC_CLIENT_IDENTIFIER);
-        $client->setRedirectUri('http://localhost/public');
+        $client->setRedirectUri(self::PUBLIC_CLIENT_REDIRECT_URI);
         $client->setIsConfidential(false);
         $client->setGrantTypes([GrantTypes::CLIENT_CREDENTIALS]);
         $client->setScopes([]);
         $manager->persist($client);
+
+        $code = new AuthCode();
+        $code->setClient($client);
+        $code->setIsRevoked(false);
+        $code->setScopes([new Scope(Scopes::OPENID)]);
+        $code->setIdentifier(self::AUTH_CODE_PUBLIC_CLIENT_IDENTIFIER);
+        $code->setUserIdentifier(self::USER_IDENTIFIER);
+        $code->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
+        $code->setRedirectUri(self::PUBLIC_CLIENT_REDIRECT_URI);
+        $manager->persist($code);
 
         // private client
         $client = new Client();
@@ -70,18 +89,12 @@ class AppFixtures extends Fixture
         $secret->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
         $manager->persist($secret);
 
-        // User
-        $user = new User();
-        $user->setPassword(PasswordHashGenerator::create(self::USER_PASSWORD));
-        $user->setUsername(self::USER_IDENTIFIER);
-        $manager->persist($user);
-
         // auth code
         $code = new AuthCode();
         $code->setClient($client);
         $code->setIsRevoked(false);
         $code->setScopes([new Scope(Scopes::OPENID)]);
-        $code->setIdentifier(self::AUTH_CODE_IDENTIFIER);
+        $code->setIdentifier(self::AUTH_CODE_PRIVATE_CLIENT_IDENTIFIER);
         $code->setUserIdentifier(self::USER_IDENTIFIER);
         $code->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
         $code->setRedirectUri(self::PRIVATE_CLIENT_REDIRECT_URI);

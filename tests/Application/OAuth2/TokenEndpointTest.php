@@ -190,7 +190,7 @@ final class TokenEndpointTest extends WebTestCase
         $router = $client->getContainer()->get(RouterInterface::class);
 
         $authCodeRepository = $client->getContainer()->get(AuthCodeRepository::class);
-        list($authCode) = $authCodeRepository->findBy(['identifier' => AppFixtures::AUTH_CODE_IDENTIFIER]);
+        list($authCode) = $authCodeRepository->findBy(['identifier' => AppFixtures::AUTH_CODE_PRIVATE_CLIENT_IDENTIFIER]);
 
         $client->request('POST', $router->generate('oauth2_token'), [
             'client_id' => AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
@@ -212,111 +212,108 @@ final class TokenEndpointTest extends WebTestCase
         $this->assertGreaterThan(0, $jsonResponse['expires_in']);
         $this->assertNotEmpty($jsonResponse['access_token']);
     }
-//
-//    public function testSuccessfulAuthorizationCodeRequestWithPublicClient(): void
-//    {
-//        $authCode = $this->client
-//            ->getContainer()
-//            ->get(AuthorizationCodeManagerInterface::class)
-//            ->find(FixtureFactory::FIXTURE_AUTH_CODE_PUBLIC_CLIENT);
-//
-//        $eventDispatcher = $this->client->getContainer()->get('event_dispatcher');
-//
-//        $eventDispatcher->addListener(OAuth2Events::TOKEN_REQUEST_RESOLVE, static function (TokenRequestResolveEvent $event): void {
-//            $event->getResponse()->headers->set('foo', 'bar');
-//        });
-//
-//        $wasRequestAccessTokenEventDispatched = false;
-//        $wasRequestRefreshTokenEventDispatched = false;
-//        $accessToken = null;
-//        $refreshToken = null;
-//
-//        $eventDispatcher->addListener(RequestEvent::ACCESS_TOKEN_ISSUED, static function (RequestAccessTokenEvent $event) use (&$wasRequestAccessTokenEventDispatched, &$accessToken): void {
-//            $wasRequestAccessTokenEventDispatched = true;
-//            $accessToken = $event->getAccessToken();
-//        });
-//
-//        $eventDispatcher->addListener(RequestEvent::REFRESH_TOKEN_ISSUED, static function (RequestRefreshTokenEvent $event) use (&$wasRequestRefreshTokenEventDispatched, &$refreshToken): void {
-//            $wasRequestRefreshTokenEventDispatched = true;
-//            $refreshToken = $event->getRefreshToken();
-//        });
-//
-//        $this->client->request('POST', '/token', [
-//            'client_id' => FixtureFactory::FIXTURE_PUBLIC_CLIENT,
-//            'grant_type' => 'authorization_code',
-//            'redirect_uri' => FixtureFactory::FIXTURE_PUBLIC_CLIENT_REDIRECT_URI,
-//            'code' => TestHelper::generateEncryptedAuthCodePayload($authCode),
-//        ]);
-//
-//        $response = $this->client->getResponse();
-//
-//        $this->assertSame(200, $response->getStatusCode());
-//        $this->assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));
-//
-//        $jsonResponse = json_decode($response->getContent(), true);
-//
-//        $this->assertSame('Bearer', $jsonResponse['token_type']);
-//        $this->assertLessThanOrEqual(3600, $jsonResponse['expires_in']);
-//        $this->assertGreaterThan(0, $jsonResponse['expires_in']);
-//        $this->assertNotEmpty($jsonResponse['access_token']);
-//        $this->assertNotEmpty($jsonResponse['refresh_token']);
-//        $this->assertSame($response->headers->get('foo'), 'bar');
-//
-//        $this->assertTrue($wasRequestAccessTokenEventDispatched);
-//        $this->assertTrue($wasRequestRefreshTokenEventDispatched);
-//
-//        $this->assertSame($authCode->getClient()->getIdentifier(), $accessToken->getClient()->getIdentifier());
-//        $this->assertSame($authCode->getUserIdentifier(), $accessToken->getUserIdentifier());
-//        $this->assertSame($accessToken->getIdentifier(), $refreshToken->getAccessToken()->getIdentifier());
-//    }
-//
-//    public function testFailedTokenRequest(): void
-//    {
-//        $this->client->request('POST', '/token');
-//
-//        $response = $this->client->getResponse();
-//
-//        $this->assertSame(400, $response->getStatusCode());
-//        $this->assertSame('application/json', $response->headers->get('Content-Type'));
-//
-//        $jsonResponse = json_decode($response->getContent(), true);
-//
-//        $this->assertSame('unsupported_grant_type', $jsonResponse['error']);
-//        $this->assertSame('The authorization grant type is not supported by the authorization server.', $jsonResponse['message']);
-//        $this->assertSame('Check that all required parameters have been provided', $jsonResponse['hint']);
-//    }
-//
-//    public function testFailedClientCredentialsTokenRequest(): void
-//    {
-//        $eventDispatcher = $this->client->getContainer()->get('event_dispatcher');
-//
-//        $eventDispatcher->addListener(OAuth2Events::TOKEN_REQUEST_RESOLVE, static function (TokenRequestResolveEvent $event): void {
-//            $event->getResponse()->headers->set('foo', 'bar');
-//        });
-//
-//        $wasClientAuthenticationEventDispatched = false;
-//
-//        $eventDispatcher->addListener(RequestEvent::CLIENT_AUTHENTICATION_FAILED, static function (RequestEvent $event) use (&$wasClientAuthenticationEventDispatched, &$accessToken): void {
-//            $wasClientAuthenticationEventDispatched = true;
-//        });
-//
-//        $this->client->request('POST', '/token', [
-//            'client_id' => 'foo',
-//            'client_secret' => 'wrong',
-//            'grant_type' => 'client_credentials',
-//        ]);
-//
-//        $response = $this->client->getResponse();
-//
-//        $this->assertSame(401, $response->getStatusCode());
-//        $this->assertSame('application/json', $response->headers->get('Content-Type'));
-//
-//        $jsonResponse = json_decode($response->getContent(), true);
-//
-//        $this->assertSame('invalid_client', $jsonResponse['error']);
-//        $this->assertSame('Client authentication failed', $jsonResponse['message']);
-//        $this->assertSame('bar', $response->headers->get('foo'));
-//
-//        $this->assertTrue($wasClientAuthenticationEventDispatched);
-//    }
+
+    public function testSuccessfulAuthorizationCodeRequestWithPublicClient(): void
+    {
+        $client = static::createClient();
+        $eventDispatcher = $client->getContainer()->get(EventDispatcherInterface::class);
+        $testHelper = $client->getContainer()->get(TestHelper::class);
+        $router = $client->getContainer()->get(RouterInterface::class);
+
+        $wasRequestAccessTokenEventDispatched = false;
+        $wasRequestRefreshTokenEventDispatched = false;
+        $accessToken = null;
+        $refreshToken = null;
+
+        $eventDispatcher->addListener(RequestEvent::ACCESS_TOKEN_ISSUED, static function (RequestAccessTokenEvent $event) use (&$wasRequestAccessTokenEventDispatched, &$accessToken): void {
+            $wasRequestAccessTokenEventDispatched = true;
+            $accessToken = $event->getAccessToken();
+        });
+
+        $eventDispatcher->addListener(RequestEvent::REFRESH_TOKEN_ISSUED, static function (RequestRefreshTokenEvent $event) use (&$wasRequestRefreshTokenEventDispatched, &$refreshToken): void {
+            $wasRequestRefreshTokenEventDispatched = true;
+            $refreshToken = $event->getRefreshToken();
+        });
+
+        $authCodeRepository = $client->getContainer()->get(AuthCodeRepository::class);
+        list($authCode) = $authCodeRepository->findBy(['identifier' => AppFixtures::AUTH_CODE_PUBLIC_CLIENT_IDENTIFIER]);
+
+        $client->request('POST', $router->generate('oauth2_token'), [
+            'client_id' => AppFixtures::PUBLIC_CLIENT_IDENTIFIER,
+            'grant_type' => GrantTypes::AUTHORIZATION_CODE,
+            'redirect_uri' => AppFixtures::PUBLIC_CLIENT_REDIRECT_URI,
+            'code' => $testHelper->generateEncryptedAuthCodePayload($authCode),
+        ]);
+
+        $response = $client->getResponse();
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));
+
+        $jsonResponse = json_decode($response->getContent(), true);
+
+        $this->assertSame('Bearer', $jsonResponse['token_type']);
+        $this->assertLessThanOrEqual(3600, $jsonResponse['expires_in']);
+        $this->assertGreaterThan(0, $jsonResponse['expires_in']);
+        $this->assertNotEmpty($jsonResponse['access_token']);
+        $this->assertNotEmpty($jsonResponse['refresh_token']);
+
+        $this->assertTrue($wasRequestAccessTokenEventDispatched);
+        $this->assertTrue($wasRequestRefreshTokenEventDispatched);
+
+        $this->assertSame($authCode->getClient()->getIdentifier(), $accessToken->getClient()->getIdentifier());
+        $this->assertSame($authCode->getUserIdentifier(), $accessToken->getUserIdentifier());
+        $this->assertSame($accessToken->getIdentifier(), $refreshToken->getAccessToken()->getIdentifier());
+    }
+
+    public function testFailedTokenRequest(): void
+    {
+        $client = static::createClient();
+        $router = $client->getContainer()->get(RouterInterface::class);
+
+        $client->request('POST', $router->generate('oauth2_token'));
+
+        $response = $client->getResponse();
+
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertSame('application/json', $response->headers->get('Content-Type'));
+
+        $jsonResponse = json_decode($response->getContent(), true);
+
+        $this->assertSame('unsupported_grant_type', $jsonResponse['error']);
+        $this->assertSame('The authorization grant type is not supported by the authorization server.', $jsonResponse['message']);
+        $this->assertSame('Check that all required parameters have been provided', $jsonResponse['hint']);
+    }
+
+    public function testFailedClientCredentialsTokenRequest(): void
+    {
+        $client = static::createClient();
+        $eventDispatcher = $client->getContainer()->get(EventDispatcherInterface::class);
+        $testHelper = $client->getContainer()->get(TestHelper::class);
+        $router = $client->getContainer()->get(RouterInterface::class);
+
+        $wasClientAuthenticationEventDispatched = false;
+
+        $eventDispatcher->addListener(RequestEvent::CLIENT_AUTHENTICATION_FAILED, static function (RequestEvent $event) use (&$wasClientAuthenticationEventDispatched, &$accessToken): void {
+            $wasClientAuthenticationEventDispatched = true;
+        });
+
+        $client->request('POST', $router->generate('oauth2_token'), [
+            'client_id' => 'foo',
+            'client_secret' => 'wrong',
+            'grant_type' => GrantTypes::CLIENT_CREDENTIALS,
+        ]);
+
+        $response = $client->getResponse();
+
+        $this->assertSame(401, $response->getStatusCode());
+        $this->assertSame('application/json', $response->headers->get('Content-Type'));
+
+        $jsonResponse = json_decode($response->getContent(), true);
+
+        $this->assertSame('invalid_client', $jsonResponse['error']);
+        $this->assertSame('Client authentication failed', $jsonResponse['message']);
+
+        $this->assertTrue($wasClientAuthenticationEventDispatched);
+    }
 }
