@@ -14,7 +14,7 @@ class Client implements ClientEntityInterface
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\CustomIdGenerator(class: UuidV4::class)]
-    private ?int $id = null;
+    private ?string $id = null;
 
     #[ORM\Column(length: 100)]
     private ?string $name = null;
@@ -30,7 +30,7 @@ class Client implements ClientEntityInterface
         return $this->id;
     }
 
-    public function getIdentifier()
+    public function getIdentifier(): ?string
     {
         return $this->getId();
     }

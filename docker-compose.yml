@@ -32,7 +32,6 @@ services:
     restart: always
     environment:
       ADMINER_DEFAULT_SERVER: database-server
-      ADMINER_DESIGN: galkaev
     ports:
       - 9005:8080
     networks:
