@@ -17,13 +17,17 @@ export PGPASSWORD=admin
 until psql -c "\q"; do sleep 3; done
 echo "SELECT 'CREATE DATABASE idp' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'idp')\gexec" \
  | psql -v ON_ERROR_STOP=1
-echo "SELECT 'CREATE DATABASE idp_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'idp_test')\gexec" \
- | psql -v ON_ERROR_STOP=1
 
 php bin/console -e dev doctrine:migrations:migrate
-php bin/console -e test doctrine:migrations:migrate
 php bin/console -e dev -n doctrine:fixtures:load
+
+# PHPUnit setup
+mkdir -p data
+touch data/database.sqlite
+php bin/console -e test doctrine:database:create
+php bin/console -e test doctrine:schema:create
 php bin/console -e test -n doctrine:fixtures:load
+chmod 600 tests/resources/private.key
 
 # Set correct permissions on var/
 rm -rf var/cache/*

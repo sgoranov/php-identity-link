@@ -19,6 +19,7 @@ RUN apt-get update && apt-get -y upgrade && DEBIAN_FRONTEND=noninteractive apt-g
     php \
     php-fpm \
     php-pgsql \
+    php-sqlite3 \
     php-xml \
     php-xdebug \
     composer
