@@ -10,6 +10,8 @@ services:
       - 9000:80
     volumes:
       - ${SOURCE_DIR}:/var/www
+    extra_hosts:
+      - host.docker.internal:${HOST_GW:-host-gateway}
     depends_on:
       - database-server
     networks:
