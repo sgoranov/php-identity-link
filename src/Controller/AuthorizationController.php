@@ -5,18 +5,18 @@ namespace App\Controller;
 
 use League\OAuth2\Server\AuthorizationServer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class AuthroizationController extends AbstractController
+class AuthorizationController extends AbstractController
 {
-    #[Route('/authorize', name: 'auth_index')]
-    public function index(AuthorizationServer $server): Response
+    #[Route('/oauth2/auth', name: 'oauth2_auth', methods: ['GET', 'POST'])]
+    public function index(AuthorizationServer $server, Security $security): Response
     {
 
-        var_dump($server);
-        exit();
-
+        // logout the user before proceed
+        $security->logout(false);
 
         return $this->render('index/index.html.twig', [
             'controller_name' => 'IndexController',

@@ -24,7 +24,12 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         parent::__construct($registry, User::class);
     }
 
-    public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity): ?User
+    public function getUserById(string $id): ?User
+    {
+        return $this->findOneBy(['id' => $id]);
+    }
+
+    public function getUser(string $username, string $password): ?User
     {
         $user = $this->findOneBy(['username' => $username]);
         if (is_null($user)) {
@@ -36,5 +41,10 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         }
 
         return null;
+    }
+
+    public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity): ?User
+    {
+        return $this->getUser($username, $password);
     }
 }

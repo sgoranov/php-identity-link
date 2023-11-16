@@ -6,7 +6,6 @@ namespace App\Controller;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Http\Message\ResponseFactoryInterface;
-use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,28 +15,16 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TokenController extends AbstractController
 {
-    private AuthorizationServer $server;
-
-    private HttpFoundationFactory $httpFoundationFactory;
-
-    private ResponseFactoryInterface $responseFactory;
-
-    private HttpMessageFactoryInterface $httpMessageFactory;
-
     public function __construct(
-        AuthorizationServer $server,
-        HttpFoundationFactoryInterface $httpFoundationFactory,
-        HttpMessageFactoryInterface $httpMessageFactory,
-        ResponseFactoryInterface $responseFactory
+        private AuthorizationServer $server,
+        private HttpFoundationFactoryInterface $httpFoundationFactory,
+        private HttpMessageFactoryInterface $httpMessageFactory,
+        private ResponseFactoryInterface $responseFactory,
     )
     {
-        $this->server = $server;
-        $this->httpFoundationFactory = $httpFoundationFactory;
-        $this->httpMessageFactory = $httpMessageFactory;
-        $this->responseFactory = $responseFactory;
     }
 
-    #[Route('/token', name: 'oauth2_token')]
+    #[Route('/oauth2/token', name: 'oauth2_token', methods: 'POST')]
     public function index(Request $request): Response
     {
         $psrRequest = $this->httpMessageFactory->createRequest($request);

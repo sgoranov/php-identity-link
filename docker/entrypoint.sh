@@ -22,6 +22,7 @@ echo "SELECT 'CREATE DATABASE idp_test' WHERE NOT EXISTS (SELECT FROM pg_databas
 
 php bin/console -e dev doctrine:migrations:migrate
 php bin/console -e test doctrine:migrations:migrate
+php bin/console -e dev -n doctrine:fixtures:load
 php bin/console -e test -n doctrine:fixtures:load
 
 # Set correct permissions on var/
