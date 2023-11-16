@@ -99,7 +99,7 @@ final class TestHelper
     public function decryptPayload(string $payload): ?string
     {
         try {
-            return Crypto::decryptWithPassword($payload, self::ENCRYPTION_KEY);
+            return Crypto::decrypt($payload, Key::loadFromAsciiSafeString(file_get_contents($this->encryptionKeyPath)));
         } catch (CryptoException $e) {
             return null;
         }
