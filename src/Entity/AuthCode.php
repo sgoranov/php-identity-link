@@ -15,7 +15,7 @@ use League\OAuth2\Server\Entities\Traits\AuthCodeTrait;
 #[ORM\Entity(repositoryClass: AuthCodeRepository::class)]
 class AuthCode implements AuthCodeEntityInterface
 {
-    use AuthCodeTrait, ScopeTrait, RevocationTrait;
+    use ScopeTrait, RevocationTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
@@ -35,8 +35,8 @@ class AuthCode implements AuthCodeEntityInterface
     #[ORM\Column]
     private DateTimeImmutable $expiryDateTime;
 
-    #[ORM\Column(type: "string", length: 500)]
-    protected $redirectUri;
+    #[ORM\Column(type: "string", length: 500, nullable: true)]
+    protected ?string $redirectUri = null;
 
     public function getId(): ?string
     {
@@ -82,5 +82,15 @@ class AuthCode implements AuthCodeEntityInterface
     public function setClient(ClientEntityInterface $client): void
     {
         $this->client = $client;
+    }
+
+    public function getRedirectUri(): ?string
+    {
+        return $this->redirectUri;
+    }
+
+    public function setRedirectUri($uri): void
+    {
+        $this->redirectUri = $uri;
     }
 }

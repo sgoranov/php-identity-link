@@ -9,8 +9,8 @@ use League\OAuth2\Server\Entities\ScopeEntityInterface;
 
 trait ScopeTrait
 {
-    #[ORM\Column(type: "text")]
-    private string $scopes;
+    #[ORM\Column(type: "text", nullable: true)]
+    private ?string $scopes = null;
 
     public function addScope(ScopeEntityInterface $scope): void
     {
