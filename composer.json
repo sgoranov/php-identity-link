@@ -1,6 +1,15 @@
 {
+    "name": "sgoranov/php-identity-link",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
+    "keywords": ["oauth2", "server"],
+    "homepage": "https://github.com/sgoranov/php-identity-link",
+    "authors": [
+        {
+            "name": "Simeon Goranov",
+            "email": "sgoranov@gmail.com"
+        }
+    ],
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
@@ -13,10 +22,12 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.16",
         "league/oauth2-server": "^8.4",
+        "nyholm/psr7": "^1.8",
         "symfony/console": "6.3.*",
         "symfony/dotenv": "6.3.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "6.3.*",
+        "symfony/psr-http-message-bridge": "^2.3",
         "symfony/runtime": "6.3.*",
         "symfony/uid": "6.3.*",
         "symfony/yaml": "6.3.*"
