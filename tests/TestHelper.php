@@ -28,7 +28,9 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
+use App\Entity\AuthCode;
 use App\Entity\RefreshToken;
+use App\Entity\Scope;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\CryptoException;
 use Defuse\Crypto\Key;
@@ -70,13 +72,17 @@ final class TestHelper
         }
     }
 
-    public function generateEncryptedAuthCodePayload(AuthorizationCodeModel $authCode): ?string
+    public function generateEncryptedAuthCodePayload(AuthCode $authCode): ?string
     {
+        $scopes = array_map(function (Scope $scope): string {
+            return $scope->getIdentifier();
+        }, $authCode->getScopes());
+
         $payload = json_encode([
             'client_id' => $authCode->getClient()->getIdentifier(),
-            'redirect_uri' => (string) $authCode->getClient()->getRedirectUris()[0],
+            'redirect_uri' => $authCode->getClient()->getRedirectUri(),
             'auth_code_id' => $authCode->getIdentifier(),
-            'scopes' => (new ScopeConverter())->toDomainArray($authCode->getScopes()),
+            'scopes' => $scopes,
             'user_id' => $authCode->getUserIdentifier(),
             'expire_time' => $authCode->getExpiryDateTime()->getTimestamp(),
             'code_challenge' => null,
@@ -84,7 +90,7 @@ final class TestHelper
         ]);
 
         try {
-            return Crypto::encryptWithPassword($payload, self::ENCRYPTION_KEY);
+            return Crypto::encrypt($payload, Key::loadFromAsciiSafeString(file_get_contents($this->encryptionKeyPath)));
         } catch (CryptoException $e) {
             return null;
         }

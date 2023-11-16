@@ -1,0 +1,4 @@
+- Support for multuple redirect uris per client
+- 2FA authentication
+- Additional user fields
+- Custom group claim name

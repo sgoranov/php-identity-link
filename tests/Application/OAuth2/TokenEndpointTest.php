@@ -29,6 +29,7 @@ declare(strict_types=1);
 namespace App\Tests\Application\OAuth2;
 
 use App\OAuth\GrantTypes;
+use App\Repository\AuthCodeRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Tests\Fixtures\AppFixtures;
 use App\Tests\TestHelper;
@@ -180,42 +181,37 @@ final class TokenEndpointTest extends WebTestCase
         $this->assertSame($refreshToken->getAccessToken()->getClient()->getIdentifier(), $accessToken->getClient()->getIdentifier());
         $this->assertSame($accessToken->getIdentifier(), $refreshTokenEntity->getAccessToken()->getIdentifier());
     }
-//
-//    public function testSuccessfulAuthorizationCodeRequest(): void
-//    {
-//        $authCode = $this->client
-//            ->getContainer()
-//            ->get(AuthorizationCodeManagerInterface::class)
-//            ->find(FixtureFactory::FIXTURE_AUTH_CODE);
-//
-//        $this->client->request('POST', '/token', [
-//            'client_id' => 'foo',
-//            'client_secret' => 'secret',
-//            'grant_type' => 'authorization_code',
-//            'redirect_uri' => 'https://example.org/oauth2/redirect-uri',
-//            'code' => TestHelper::generateEncryptedAuthCodePayload($authCode),
-//        ]);
-//
-//        $this->client
-//            ->getContainer()
-//            ->get('event_dispatcher')
-//            ->addListener(OAuth2Events::TOKEN_REQUEST_RESOLVE, static function (TokenRequestResolveEvent $event): void {
-//                $event->getResponse()->headers->set('foo', 'bar');
-//            });
-//
-//        $response = $this->client->getResponse();
-//
-//        $this->assertSame(200, $response->getStatusCode());
-//        $this->assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));
-//
-//        $jsonResponse = json_decode($response->getContent(), true);
-//
-//        $this->assertSame('Bearer', $jsonResponse['token_type']);
-//        $this->assertLessThanOrEqual(3600, $jsonResponse['expires_in']);
-//        $this->assertGreaterThan(0, $jsonResponse['expires_in']);
-//        $this->assertNotEmpty($jsonResponse['access_token']);
-//        $this->assertEmpty($response->headers->get('foo'), 'bar');
-//    }
+
+    public function testSuccessfulAuthorizationCodeRequest(): void
+    {
+        $client = static::createClient();
+        $eventDispatcher = $client->getContainer()->get(EventDispatcherInterface::class);
+        $testHelper = $client->getContainer()->get(TestHelper::class);
+        $router = $client->getContainer()->get(RouterInterface::class);
+
+        $authCodeRepository = $client->getContainer()->get(AuthCodeRepository::class);
+        list($authCode) = $authCodeRepository->findBy(['identifier' => AppFixtures::AUTH_CODE_IDENTIFIER]);
+
+        $client->request('POST', $router->generate('oauth2_token'), [
+            'client_id' => AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
+            'client_secret' => AppFixtures::PRIVATE_CLIENT_SECRET,
+            'grant_type' => GrantTypes::AUTHORIZATION_CODE,
+            'redirect_uri' => AppFixtures::PRIVATE_CLIENT_REDIRECT_URI,
+            'code' => $testHelper->generateEncryptedAuthCodePayload($authCode),
+        ]);
+
+        $response = $client->getResponse();
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));
+
+        $jsonResponse = json_decode($response->getContent(), true);
+
+        $this->assertSame('Bearer', $jsonResponse['token_type']);
+        $this->assertLessThanOrEqual(3600, $jsonResponse['expires_in']);
+        $this->assertGreaterThan(0, $jsonResponse['expires_in']);
+        $this->assertNotEmpty($jsonResponse['access_token']);
+    }
 //
 //    public function testSuccessfulAuthorizationCodeRequestWithPublicClient(): void
 //    {
