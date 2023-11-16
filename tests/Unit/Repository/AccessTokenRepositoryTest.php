@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Tests\Repository;
+namespace App\Tests\Unit\Repository;
 
 use App\Repository\AccessTokenRepository;
 use App\Repository\ClientRepository;
+use App\Tests\Fixtures\AppFixtures;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class AccessTokenRepositoryTest extends KernelTestCase
@@ -20,21 +22,21 @@ class AccessTokenRepositoryTest extends KernelTestCase
 
     public function testGetNewToken(): void
     {
-        $client = self::$clientRepository->getClientEntity('client_private');
+        $client = self::$clientRepository->getClientEntity(AppFixtures::PRIVATE_CLIENT_IDENTIFIER);
 
-        $token = self::$accessTokenRepository->getNewToken($client, [], 'user_identifier');
+        $token = self::$accessTokenRepository->getNewToken($client, [], AppFixtures::USER_IDENTIFIER);
         $this->assertEmpty($token->getScopes());
 
-        $token = self::$accessTokenRepository->getNewToken($client, [], 'user_identifier');
-        $this->assertEquals('user_identifier', $token->getUserIdentifier());
+        $token = self::$accessTokenRepository->getNewToken($client, [], AppFixtures::USER_IDENTIFIER);
+        $this->assertEquals(AppFixtures::USER_IDENTIFIER, $token->getUserIdentifier());
 
-        $token = self::$accessTokenRepository->getNewToken($client, [], 'user_identifier');
-        $this->assertEquals('client_private', $token->getClient()->getIdentifier());
+        $token = self::$accessTokenRepository->getNewToken($client, [], AppFixtures::USER_IDENTIFIER);
+        $this->assertEquals(AppFixtures::PRIVATE_CLIENT_IDENTIFIER, $token->getClient()->getIdentifier());
     }
 
     public function testRevokeAccessToken(): void
     {
-        list($token) = self::$accessTokenRepository->findBy(['identifier' => 'access_token_identifier']);
+        list($token) = self::$accessTokenRepository->findBy(['identifier' => AppFixtures::ACCESS_TOKEN_IDENTIFIER]);
         $this->assertFalse(self::$accessTokenRepository->isAccessTokenRevoked($token->getIdentifier()));
 
         self::$accessTokenRepository->revokeAccessToken($token->getIdentifier());

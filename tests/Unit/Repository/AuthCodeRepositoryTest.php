@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Tests\Repository;
+namespace App\Tests\Unit\Repository;
 
 use App\Repository\AuthCodeRepository;
+use App\Tests\Fixtures\AppFixtures;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class AuthCodeRepositoryTest extends KernelTestCase
@@ -17,7 +19,7 @@ class AuthCodeRepositoryTest extends KernelTestCase
 
     public function testRevokeAuthCode(): void
     {
-        list($token) = self::$authCodeRepository->findBy(['identifier' => 'auth_code_identifier']);
+        list($token) = self::$authCodeRepository->findBy(['identifier' => AppFixtures::AUTH_CODE_IDENTIFIER]);
         $this->assertFalse(self::$authCodeRepository->isAuthCodeRevoked($token->getIdentifier()));
 
         self::$authCodeRepository->revokeAuthCode($token->getIdentifier());

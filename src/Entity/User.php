@@ -29,7 +29,7 @@ class User implements UserEntityInterface
     }
 
     /**
-     * @return string
+     * @return mixed
      */
     public function getIdentifier(): string
     {
