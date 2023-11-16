@@ -2,23 +2,23 @@
 
 namespace App\Repository;
 
-use App\Entity\ClientGrantTypes;
+use App\Entity\ClientGrantType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<ClientGrantTypes>
+ * @extends ServiceEntityRepository<ClientGrantType>
  *
- * @method ClientGrantTypes|null find($id, $lockMode = null, $lockVersion = null)
- * @method ClientGrantTypes|null findOneBy(array $criteria, array $orderBy = null)
- * @method ClientGrantTypes[]    findAll()
- * @method ClientGrantTypes[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method ClientGrantType|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ClientGrantType|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ClientGrantType[]    findAll()
+ * @method ClientGrantType[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ClientGrantTypesRepository extends ServiceEntityRepository
+class ClientGrantTypeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ClientGrantTypes::class);
+        parent::__construct($registry, ClientGrantType::class);
     }
 
 //    /**

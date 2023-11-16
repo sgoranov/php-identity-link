@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Client;
+use App\Entity\ClientGrantType;
 use App\Entity\ClientSecret;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -36,34 +37,40 @@ class ClientRepository extends ServiceEntityRepository implements ClientReposito
         ;
     }
 
-    public function validateClient($clientIdentifier, $clientSecret = null, $grantType = null): bool
+    public function validateClient($clientIdentifier, $clientSecret, $grantType): bool
     {
-//        ->innerJoin(Image::class, 'c', Join::WITH,
-//        'a.id = c.category AND c.isPublic = :isPublic
-//                AND (c.expirationDateTime IS NULL OR c.expirationDateTime >= :today)')
-
-
-        // TODO: Handle grant types
-
-        if ($clientSecret !== null) {
-
-        }
-
-
-        $result = $this->createQueryBuilder('t')
-            ->select('s')
-            ->innerJoin(ClientSecret::class, 's', Join::WITH, 's.client = t.id')
+        $queryBuilder = $this->createQueryBuilder('t')
             ->andWhere('t.isConfidential = :isConfidential')
-            ->setParameter('isConfidential', true)
-            ->andWhere('s.expiryDateTime >= :now')
-            ->setParameter('now', new DateTime())
-            ->getQuery()
-            ->getResult()
+            ->innerJoin(ClientGrantType::class, 'gt', Join::WITH, 'gt.client = t.id')
+            ->andWhere('gt.grantType = :grantType')
+            ->setParameter('grantType', $grantType)
         ;
 
-        /** @var ClientSecret $secret */
-        foreach ($result as $secret) {
-            if (password_verify($clientSecret, $secret->getSecret())) {
+        if ($clientSecret !== null) {
+            $result = $queryBuilder->select('s')
+                ->setParameter('isConfidential', true)
+                ->innerJoin(ClientSecret::class, 's', Join::WITH, 's.client = t.id')
+                ->andWhere('s.expiryDateTime >= :now')
+                ->setParameter('now', new DateTime())
+                ->getQuery()
+                ->getResult()
+            ;
+
+            /** @var ClientSecret $secret */
+            foreach ($result as $secret) {
+                if (password_verify($clientSecret, $secret->getSecret())) {
+                    return true;
+                }
+            }
+
+        } else {
+            $result = $queryBuilder->select('t')
+                ->setParameter('isConfidential', false)
+                ->getQuery()
+                ->getOneOrNullResult()
+            ;
+
+            if ($result !== null) {
                 return true;
             }
         }

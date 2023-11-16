@@ -2,6 +2,7 @@
 
 namespace  App\Tests\Repository;
 
+use App\Entity\ClientGrantType;
 use App\Repository\ClientRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -29,9 +30,25 @@ class ClientRepositoryTest extends KernelTestCase
         $this->assertNull($client);
     }
 
-    public function testValidateClient(): void
+    public function testPublicClientValidity(): void
     {
-        self::$clientRepository->validateClient('test', 'secret');
+        $result = self::$clientRepository->validateClient('test_public', null,
+            ClientGrantType::GRANT_TYPE_AUTHORIZATION_CODE);
+        $this->assertFalse($result);
 
+        $result = self::$clientRepository->validateClient('test_public', null,
+            ClientGrantType::GRANT_TYPE_CLIENT_CREDENTIALS);
+        $this->assertTrue($result);
+    }
+
+    public function testPrivateClientValidity(): void
+    {
+        $result = self::$clientRepository->validateClient('test', 'secret',
+            ClientGrantType::GRANT_TYPE_AUTHORIZATION_CODE);
+        $this->assertFalse($result);
+
+        $result = self::$clientRepository->validateClient('test', 'secret',
+            ClientGrantType::GRANT_TYPE_CLIENT_CREDENTIALS);
+        $this->assertTrue($result);
     }
 }

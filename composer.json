@@ -72,6 +72,7 @@
         "doctrine/doctrine-fixtures-bundle": "^3.4",
         "phpunit/phpunit": "^9.5",
         "symfony/debug-bundle": "6.3.*",
+        "symfony/maker-bundle": "^1.51",
         "symfony/phpunit-bridge": "^6.3",
         "symfony/web-profiler-bundle": "6.3.*"
     }

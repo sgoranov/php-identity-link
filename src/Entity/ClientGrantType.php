@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\ClientGrantTypesRepository;
+use App\Repository\ClientGrantTypeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ClientGrantTypesRepository::class)]
-class ClientGrantTypes
+#[ORM\Entity(repositoryClass: ClientGrantTypeRepository::class)]
+class ClientGrantType
 {
     const GRANT_TYPE_CLIENT_CREDENTIALS = 'client_credentials';
     const GRANT_TYPE_PASSWORD = 'password';
