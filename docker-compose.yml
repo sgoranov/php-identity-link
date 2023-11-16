@@ -1,0 +1,53 @@
+version: '3.5'
+services:
+
+  idp-server:
+    container_name: idp-server
+    privileged: true
+    build:
+      context: ${SOURCE_DIR}
+    ports:
+      - 9000:80
+    volumes:
+      - ${SOURCE_DIR}:/var/www
+    depends_on:
+      - database-server
+    networks:
+      - my-network
+
+  database-server:
+    container_name: database-server
+    image: postgres:10
+    restart: always
+    ports:
+      - "9001:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    networks:
+      - my-network
+
+  adminer:
+    image: adminer
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: database-server
+      ADMINER_DESIGN: galkaev
+    ports:
+      - 9005:8080
+    networks:
+      - my-network
+
+  smtp-server:
+    image: mailhog/mailhog
+    logging:
+      driver: 'none'  # disable saving logs
+    ports:
+      - 9025:1025 # smtp server
+      - 9006:8025 # web ui
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
