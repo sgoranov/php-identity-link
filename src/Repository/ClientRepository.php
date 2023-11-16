@@ -39,7 +39,7 @@ class ClientRepository extends ServiceEntityRepository implements ClientReposito
             throw new \InvalidArgumentException(sprintf('Client with identifier %s was not found.', $clientIdentifier));
         }
 
-        if ($grantType !== null && !in_array($grantType, $client->getGrantTypes())) {
+        if ($grantType !== null && !in_array($grantType, $client->getGrantTypes(), true)) {
             return false;
         }
 
@@ -64,6 +64,7 @@ class ClientRepository extends ServiceEntityRepository implements ClientReposito
 
         /** @var ClientSecret $secret */
         foreach ($result as $secret) {
+
             if (password_verify($clientSecret, $secret->getSecret())) {
                 return true;
             }

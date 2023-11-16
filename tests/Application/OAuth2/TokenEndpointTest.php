@@ -29,7 +29,9 @@ declare(strict_types=1);
 namespace App\Tests\Application\OAuth2;
 
 use App\OAuth\GrantTypes;
+use App\Repository\RefreshTokenRepository;
 use App\Tests\Fixtures\AppFixtures;
+use App\Tests\TestHelper;
 use League\OAuth2\Server\RequestAccessTokenEvent;
 use League\OAuth2\Server\RequestEvent;
 use League\OAuth2\Server\RequestRefreshTokenEvent;
@@ -39,7 +41,6 @@ use Symfony\Component\Routing\RouterInterface;
 
 final class TokenEndpointTest extends WebTestCase
 {
-
     public function testSuccessfulClientCredentialsRequest(): void
     {
         $client = static::createClient();
@@ -123,76 +124,62 @@ final class TokenEndpointTest extends WebTestCase
         $this->assertTrue($wasRequestAccessTokenEventDispatched);
         $this->assertTrue($wasRequestRefreshTokenEventDispatched);
 
-        $this->assertSame('foo', $accessToken->getClient()->getIdentifier());
-        $this->assertSame('user', $accessToken->getUserIdentifier());
+        $this->assertSame(AppFixtures::PRIVATE_CLIENT_IDENTIFIER, $accessToken->getClient()->getIdentifier());
+        $this->assertSame(AppFixtures::USER_IDENTIFIER, $accessToken->getUserIdentifier());
         $this->assertSame($accessToken->getIdentifier(), $refreshToken->getAccessToken()->getIdentifier());
     }
-//
-//    public function testSuccessfulRefreshTokenRequest(): void
-//    {
-//        $refreshToken = $this->client
-//            ->getContainer()
-//            ->get(RefreshTokenManagerInterface::class)
-//            ->find(FixtureFactory::FIXTURE_REFRESH_TOKEN);
-//
-//        $eventDispatcher = $this->client->getContainer()->get('event_dispatcher');
-//
-//        $eventDispatcher->addListener(OAuth2Events::TOKEN_REQUEST_RESOLVE, static function (TokenRequestResolveEvent $event): void {
-//            $event->getResponse()->headers->set('foo', 'bar');
-//        });
-//
-//        $eventDispatcher->addListener(OAuth2Events::TOKEN_REQUEST_RESOLVE, static function (TokenRequestResolveEvent $event): void {
-//            if ('bar' === $event->getResponse()->headers->get('foo')) {
-//                $newResponse = clone $event->getResponse();
-//                $newResponse->headers->remove('foo');
-//                $newResponse->headers->set('baz', 'qux');
-//                $event->setResponse($newResponse);
-//            }
-//        }, -1);
-//
-//        $wasRequestAccessTokenEventDispatched = false;
-//        $wasRequestRefreshTokenEventDispatched = false;
-//        $accessToken = null;
-//        $refreshTokenEntity = null;
-//
-//        $eventDispatcher->addListener(RequestEvent::ACCESS_TOKEN_ISSUED, static function (RequestAccessTokenEvent $event) use (&$wasRequestAccessTokenEventDispatched, &$accessToken): void {
-//            $wasRequestAccessTokenEventDispatched = true;
-//            $accessToken = $event->getAccessToken();
-//        });
-//
-//        $eventDispatcher->addListener(RequestEvent::REFRESH_TOKEN_ISSUED, static function (RequestRefreshTokenEvent $event) use (&$wasRequestRefreshTokenEventDispatched, &$refreshTokenEntity): void {
-//            $wasRequestRefreshTokenEventDispatched = true;
-//            $refreshTokenEntity = $event->getRefreshToken();
-//        });
-//
-//        $this->client->request('POST', '/token', [
-//            'client_id' => 'foo',
-//            'client_secret' => 'secret',
-//            'grant_type' => 'refresh_token',
-//            'refresh_token' => TestHelper::generateEncryptedPayload($refreshToken),
-//        ]);
-//
-//        $response = $this->client->getResponse();
-//
-//        $this->assertSame(200, $response->getStatusCode());
-//        $this->assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));
-//
-//        $jsonResponse = json_decode($response->getContent(), true);
-//
-//        $this->assertSame('Bearer', $jsonResponse['token_type']);
-//        $this->assertLessThanOrEqual(3600, $jsonResponse['expires_in']);
-//        $this->assertGreaterThan(0, $jsonResponse['expires_in']);
-//        $this->assertNotEmpty($jsonResponse['access_token']);
-//        $this->assertNotEmpty($jsonResponse['refresh_token']);
-//        $this->assertFalse($response->headers->has('foo'));
-//        $this->assertSame($response->headers->get('baz'), 'qux');
-//
-//        $this->assertTrue($wasRequestAccessTokenEventDispatched);
-//        $this->assertTrue($wasRequestRefreshTokenEventDispatched);
-//
-//        $this->assertSame($refreshToken->getAccessToken()->getClient()->getIdentifier(), $accessToken->getClient()->getIdentifier());
-//        $this->assertSame($accessToken->getIdentifier(), $refreshTokenEntity->getAccessToken()->getIdentifier());
-//    }
+
+    public function testSuccessfulRefreshTokenRequest(): void
+    {
+        $client = static::createClient();
+        $eventDispatcher = $client->getContainer()->get(EventDispatcherInterface::class);
+        $testHelper = $client->getContainer()->get(TestHelper::class);
+        $router = $client->getContainer()->get(RouterInterface::class);
+
+        $refreshTokenRepository = $client->getContainer()->get(RefreshTokenRepository::class);
+        list($refreshToken) = $refreshTokenRepository->findBy(['identifier' => AppFixtures::REFRESH_TOKEN_IDENTIFIER]);
+
+        $wasRequestAccessTokenEventDispatched = false;
+        $wasRequestRefreshTokenEventDispatched = false;
+        $accessToken = null;
+        $refreshTokenEntity = null;
+
+        $eventDispatcher->addListener(RequestEvent::ACCESS_TOKEN_ISSUED, static function (RequestAccessTokenEvent $event) use (&$wasRequestAccessTokenEventDispatched, &$accessToken): void {
+            $wasRequestAccessTokenEventDispatched = true;
+            $accessToken = $event->getAccessToken();
+        });
+
+        $eventDispatcher->addListener(RequestEvent::REFRESH_TOKEN_ISSUED, static function (RequestRefreshTokenEvent $event) use (&$wasRequestRefreshTokenEventDispatched, &$refreshTokenEntity): void {
+            $wasRequestRefreshTokenEventDispatched = true;
+            $refreshTokenEntity = $event->getRefreshToken();
+        });
+
+        $client->request('POST', $router->generate('oauth2_token'), [
+            'client_id' => AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
+            'client_secret' => AppFixtures::PRIVATE_CLIENT_SECRET,
+            'grant_type' => GrantTypes::REFRESH_TOKEN,
+            'refresh_token' => $testHelper->generateEncryptedPayload($refreshToken),
+        ]);
+
+        $response = $client->getResponse();
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));
+
+        $jsonResponse = json_decode($response->getContent(), true);
+
+        $this->assertSame('Bearer', $jsonResponse['token_type']);
+        $this->assertLessThanOrEqual(3600, $jsonResponse['expires_in']);
+        $this->assertGreaterThan(0, $jsonResponse['expires_in']);
+        $this->assertNotEmpty($jsonResponse['access_token']);
+        $this->assertNotEmpty($jsonResponse['refresh_token']);
+
+        $this->assertTrue($wasRequestAccessTokenEventDispatched);
+        $this->assertTrue($wasRequestRefreshTokenEventDispatched);
+
+        $this->assertSame($refreshToken->getAccessToken()->getClient()->getIdentifier(), $accessToken->getClient()->getIdentifier());
+        $this->assertSame($accessToken->getIdentifier(), $refreshTokenEntity->getAccessToken()->getIdentifier());
+    }
 //
 //    public function testSuccessfulAuthorizationCodeRequest(): void
 //    {

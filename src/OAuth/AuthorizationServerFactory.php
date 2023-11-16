@@ -8,6 +8,7 @@ use App\Repository\AuthCodeRepository;
 use App\Repository\ClientRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Repository\ScopeRepository;
+use Defuse\Crypto\Key;
 use League\Event\Emitter;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
@@ -108,7 +109,7 @@ class AuthorizationServerFactory
             $this->accessTokenRepository,
             $this->scopeRepository,
             $this->privateKey,
-            $this->encryptionKey
+            Key::loadFromAsciiSafeString(file_get_contents($this->encryptionKey))
         );
 
         $server->setEmitter($this->emitter);

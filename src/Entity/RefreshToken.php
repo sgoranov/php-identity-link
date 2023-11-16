@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Entity\Traits\RevocationTrait;
-use App\Entity\Traits\ScopeTrait;
 use App\Repository\RefreshTokenRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,7 +13,7 @@ use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
 #[ORM\Entity(repositoryClass: RefreshTokenRepository::class)]
 class RefreshToken implements RefreshTokenEntityInterface
 {
-    use ScopeTrait, RevocationTrait;
+    use RevocationTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]

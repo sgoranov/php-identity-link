@@ -14,5 +14,10 @@ services:
     _defaults:
         public: true
 
+    App\Tests\TestHelper:
+        arguments:
+            - '%encryption_key%'
+            - '%private_key%'
+
     App\Repository\ScopeRepository:
         public: true

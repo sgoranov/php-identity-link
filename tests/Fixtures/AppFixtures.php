@@ -7,6 +7,7 @@ use App\Entity\AccessToken;
 use App\Entity\AuthCode;
 use App\Entity\Client;
 use App\Entity\ClientSecret;
+use App\Entity\RefreshToken;
 use App\Entity\Scope;
 use App\Entity\User;
 use App\OAuth\GrantTypes;
@@ -33,6 +34,7 @@ class AppFixtures extends Fixture
     const USER_PASSWORD = 'f1080c74-ace7-44e8-8512-d2917d6dcde6';
 
     const ACCESS_TOKEN_IDENTIFIER = '6fbc4538-e365-479b-84d9-c881f3259c3f';
+    const REFRESH_TOKEN_IDENTIFIER = '0e57c42d-4537-4ab4-8b51-328ba75ab9c7';
 
     public function load(ObjectManager $manager): void
     {
@@ -86,14 +88,22 @@ class AppFixtures extends Fixture
         $manager->persist($code);
 
         // access token
-        $token = new AccessToken();
-        $token->setClient($client);
-        $token->setIsRevoked(false);
-        $token->setScopes([new Scope(Scopes::OPENID)]);
-        $token->setIdentifier(self::ACCESS_TOKEN_IDENTIFIER);
-        $token->setUserIdentifier(self::USER_IDENTIFIER);
-        $token->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
-        $manager->persist($token);
+        $accessToken = new AccessToken();
+        $accessToken->setClient($client);
+        $accessToken->setIsRevoked(false);
+        $accessToken->setScopes([new Scope(Scopes::OPENID)]);
+        $accessToken->setIdentifier(self::ACCESS_TOKEN_IDENTIFIER);
+        $accessToken->setUserIdentifier(self::USER_IDENTIFIER);
+        $accessToken->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
+        $manager->persist($accessToken);
+
+        // refresh toen
+        $refreshToken = new RefreshToken();
+        $refreshToken->setAccessToken($accessToken);
+        $refreshToken->setIsRevoked(false);
+        $refreshToken->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
+        $refreshToken->setIdentifier(self::REFRESH_TOKEN_IDENTIFIER);
+        $manager->persist($refreshToken);
 
         $manager->flush();
     }
