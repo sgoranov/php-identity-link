@@ -51,6 +51,15 @@ services:
     App\Repository\ScopeRepository:
         public: true
 
+    Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface:
+        class: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
+
+    Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface:
+        class: Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory
+
+    Psr\Http\Message\ResponseFactoryInterface:
+        class: Nyholm\Psr7\Factory\Psr17Factory
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
     App\Tests\DataFixtures\:
