@@ -2,39 +2,36 @@
 
 namespace App\Entity;
 
-use App\Repository\ScopeRepository;
-use Doctrine\ORM\Mapping as ORM;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 
-#[ORM\Entity(repositoryClass: ScopeRepository::class)]
 class Scope implements ScopeEntityInterface
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: "CUSTOM")]
-    #[ORM\Column(type: "uuid", unique: true)]
-    #[ORM\CustomIdGenerator(class: "doctrine.uuid_generator")]
-    private ?string $id = null;
+    const SCOPE_OPENID = 'openid';
+    const SCOPE_PROFILE = 'profile';
+    const SCOPE_GROUPS = 'groups';
 
-    #[ORM\Column(unique: true)]
     private string $identifier;
 
-    public function getId(): ?string
+    public function __construct(string $identifier)
     {
-        return $this->id;
+        if (!in_array($identifier, [
+            self::SCOPE_OPENID,
+            self::SCOPE_PROFILE,
+            self::SCOPE_GROUPS,
+        ])) {
+            throw new \InvalidArgumentException(sprintf('Invalid scope %s passed.', $identifier));
+        }
+
+        $this->identifier = $identifier;
     }
 
     public function jsonSerialize(): ?string
     {
-        return $this->getIdentifier();
+        return $this->identifier;
     }
 
     public function getIdentifier(): string
     {
         return $this->identifier;
-    }
-
-    public function setIdentifier(string $identifier): void
-    {
-        $this->identifier = $identifier;
     }
 }

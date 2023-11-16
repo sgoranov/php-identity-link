@@ -9,6 +9,11 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
 class Client implements ClientEntityInterface
 {
+    const GRANT_TYPE_CLIENT_CREDENTIALS = 'client_credentials';
+    const GRANT_TYPE_PASSWORD = 'password';
+    const GRANT_TYPE_AUTHORIZATION_CODE = 'authorization_code';
+    const GRANT_TYPE_REFRESH_TOKEN = 'refresh_token';
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\Column(type: "uuid", unique: true)]
@@ -26,6 +31,9 @@ class Client implements ClientEntityInterface
 
     #[ORM\Column]
     private bool $isConfidential = true;
+
+    #[ORM\Column(type: "text")]
+    private string $grantTypes;
 
     public function getId(): ?string
     {
@@ -70,5 +78,28 @@ class Client implements ClientEntityInterface
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+
+    public function getGrantTypes(): array
+    {
+        return json_decode($this->grantTypes, JSON_OBJECT_AS_ARRAY);
+    }
+
+    public function setGrantTypes(array $grantTypes): void
+    {
+        $grantTypes = array_unique(array_values($grantTypes));
+
+        foreach ($grantTypes as $grantType) {
+            if (!in_array($grantType, [
+                self::GRANT_TYPE_CLIENT_CREDENTIALS,
+                self::GRANT_TYPE_PASSWORD,
+                self::GRANT_TYPE_AUTHORIZATION_CODE,
+                self::GRANT_TYPE_REFRESH_TOKEN,
+            ])) {
+                throw new \InvalidArgumentException(sprintf('Invalid grant type %s passed.', $grantType));
+            }
+        }
+
+        $this->grantTypes = json_encode($grantTypes);
     }
 }

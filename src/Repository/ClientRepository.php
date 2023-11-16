@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Client;
-use App\Entity\ClientGrantType;
+use App\Entity\GrantType;
 use App\Entity\ClientSecret;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -29,48 +29,42 @@ class ClientRepository extends ServiceEntityRepository implements ClientReposito
 
     public function getClientEntity($clientIdentifier): ?ClientEntityInterface
     {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.identifier = :val')
-            ->setParameter('val', $clientIdentifier)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        return $this->findOneBy(['identifier' => $clientIdentifier]);
     }
 
     public function validateClient($clientIdentifier, $clientSecret, $grantType): bool
     {
-        $queryBuilder = $this->createQueryBuilder('t')
-            ->andWhere('t.isConfidential = :isConfidential')
-            ->innerJoin(ClientGrantType::class, 'gt', Join::WITH, 'gt.client = t.id')
-            ->andWhere('gt.grantType = :grantType')
-            ->setParameter('grantType', $grantType)
-        ;
+        $client = $this->findOneBy(['identifier' => $clientIdentifier]);
+        if (is_null($client)) {
+            throw new \InvalidArgumentException(sprintf('Client with identifier %s was not found.', $clientIdentifier));
+        }
 
-        if ($clientSecret !== null) {
-            $result = $queryBuilder->select('s')
-                ->setParameter('isConfidential', true)
-                ->innerJoin(ClientSecret::class, 's', Join::WITH, 's.client = t.id')
-                ->andWhere('s.expiryDateTime >= :now')
-                ->setParameter('now', new DateTime())
-                ->getQuery()
-                ->getResult()
-            ;
+        if ($grantType !== null && !in_array($grantType, $client->getGrantTypes())) {
+            return false;
+        }
 
-            /** @var ClientSecret $secret */
-            foreach ($result as $secret) {
-                if (password_verify($clientSecret, $secret->getSecret())) {
-                    return true;
-                }
+        if ($clientSecret === null) {
+
+            if ($client->isConfidential()) {
+                return false;
             }
 
-        } else {
-            $result = $queryBuilder->select('t')
-                ->setParameter('isConfidential', false)
-                ->getQuery()
-                ->getOneOrNullResult()
-            ;
+            return  true;
+        }
 
-            if ($result !== null) {
+        // check client secret
+        $result = $this->createQueryBuilder('t')
+            ->select('s')
+            ->innerJoin(ClientSecret::class, 's', Join::WITH, 's.client = t.id')
+            ->andWhere('s.expiryDateTime >= :now')
+            ->setParameter('now', new DateTime())
+            ->getQuery()
+            ->getResult()
+        ;
+
+        /** @var ClientSecret $secret */
+        foreach ($result as $secret) {
+            if (password_verify($clientSecret, $secret->getSecret())) {
                 return true;
             }
         }

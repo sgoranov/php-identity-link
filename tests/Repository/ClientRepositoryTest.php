@@ -2,8 +2,12 @@
 
 namespace  App\Tests\Repository;
 
-use App\Entity\ClientGrantType;
+use App\Entity\Client;
+use App\Entity\GrantType;
+use App\Entity\ClientSecret;
 use App\Repository\ClientRepository;
+use App\Tests\Creator\ClientCreator;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 // php bin/console --env=test doctrine:database:create
@@ -16,15 +20,14 @@ class ClientRepositoryTest extends KernelTestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::bootKernel();
         $container = static::getContainer();
         self::$clientRepository = $container->get(ClientRepository::class);
     }
 
     public function testGetClientByIdentifier(): void
     {
-        $client = self::$clientRepository->getClientEntity('test');
-        $this->assertEquals('test', $client->getName());
+        $client = self::$clientRepository->getClientEntity('client_private');
+        $this->assertEquals('client_private', $client->getName());
 
         $client = self::$clientRepository->getClientEntity('no_such_client');
         $this->assertNull($client);
@@ -32,23 +35,23 @@ class ClientRepositoryTest extends KernelTestCase
 
     public function testPublicClientValidity(): void
     {
-        $result = self::$clientRepository->validateClient('test_public', null,
-            ClientGrantType::GRANT_TYPE_AUTHORIZATION_CODE);
+        $result = self::$clientRepository->validateClient('client_public', null,
+            Client::GRANT_TYPE_AUTHORIZATION_CODE);
         $this->assertFalse($result);
 
-        $result = self::$clientRepository->validateClient('test_public', null,
-            ClientGrantType::GRANT_TYPE_CLIENT_CREDENTIALS);
+        $result = self::$clientRepository->validateClient('client_public', null,
+            Client::GRANT_TYPE_CLIENT_CREDENTIALS);
         $this->assertTrue($result);
     }
 
     public function testPrivateClientValidity(): void
     {
-        $result = self::$clientRepository->validateClient('test', 'secret',
-            ClientGrantType::GRANT_TYPE_AUTHORIZATION_CODE);
+        $result = self::$clientRepository->validateClient('client_private', 'secret',
+            Client::GRANT_TYPE_AUTHORIZATION_CODE);
         $this->assertFalse($result);
 
-        $result = self::$clientRepository->validateClient('test', 'secret',
-            ClientGrantType::GRANT_TYPE_CLIENT_CREDENTIALS);
+        $result = self::$clientRepository->validateClient('client_private', 'secret',
+            Client::GRANT_TYPE_CLIENT_CREDENTIALS);
         $this->assertTrue($result);
     }
 }
