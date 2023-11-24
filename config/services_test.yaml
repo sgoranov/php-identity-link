@@ -16,8 +16,7 @@ services:
 
     App\Tests\TestHelper:
         arguments:
-            - '%encryption_key%'
-            - '%private_key%'
+            - '@App\Repository\ClientRepository'
 
     App\Repository\ScopeRepository:
         public: true

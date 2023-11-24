@@ -3,21 +3,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Repository;
 
-use App\Repository\AccessTokenRepository;
-use App\Repository\ClientRepository;
+use App\Service\OAuth2\AccessTokenService;
+use App\Service\OAuth2\ClientService;
 use App\Tests\Fixtures\AppFixtures;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class AccessTokenRepositoryTest extends KernelTestCase
 {
-    private static ClientRepository $clientRepository;
-    private static AccessTokenRepository $accessTokenRepository;
+    private static ClientService $clientRepository;
+    private static AccessTokenService $accessTokenRepository;
 
     public static function setUpBeforeClass(): void
     {
         $container = static::getContainer();
-        self::$accessTokenRepository = $container->get(AccessTokenRepository::class);
-        self::$clientRepository = $container->get(ClientRepository::class);
+        self::$accessTokenRepository = $container->get(AccessTokenService::class);
+        self::$clientRepository = $container->get(ClientService::class);
     }
 
     public function testGetNewToken(): void
@@ -39,10 +39,9 @@ class AccessTokenRepositoryTest extends KernelTestCase
 
     public function testRevokeAccessToken(): void
     {
-        list($token) = self::$accessTokenRepository->findBy(['identifier' => AppFixtures::ACCESS_TOKEN_IDENTIFIER]);
-        $this->assertFalse(self::$accessTokenRepository->isAccessTokenRevoked($token->getIdentifier()));
+        $this->assertFalse(self::$accessTokenRepository->isAccessTokenRevoked(AppFixtures::ACCESS_TOKEN_IDENTIFIER));
 
-        self::$accessTokenRepository->revokeAccessToken($token->getIdentifier());
-        $this->assertTrue(self::$accessTokenRepository->isAccessTokenRevoked($token->getIdentifier()));
+        self::$accessTokenRepository->revokeAccessToken(AppFixtures::ACCESS_TOKEN_IDENTIFIER);
+        $this->assertTrue(self::$accessTokenRepository->isAccessTokenRevoked(AppFixtures::ACCESS_TOKEN_IDENTIFIER));
     }
 }

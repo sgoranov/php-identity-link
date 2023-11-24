@@ -8,10 +8,9 @@ use App\Entity\AuthCode;
 use App\Entity\Client;
 use App\Entity\ClientSecret;
 use App\Entity\RefreshToken;
-use App\Entity\Scope;
 use App\Entity\User;
-use App\OAuth\GrantTypes;
-use App\OAuth\Scopes;
+use App\Model\OAuth2\GrantTypeModel;
+use App\Model\OAuth2\ScopeModel;
 use App\Service\PasswordHashGenerator;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -26,6 +25,7 @@ class AppFixtures extends Fixture
 
     const PRIVATE_CLIENT_IDENTIFIER = '9d080b69-fe45-49ab-95fe-4a1c9b860ca3';
     const PRIVATE_CLIENT_SECRET = '2b740e1d-1655-4ad5-8f20-ee37e4e47f82';
+    const PRIVATE_CLIENT_EXPIRED_SECRET = '2b740e1d-1655-4ad5-8f20-ee37e4e47f83';
     const PRIVATE_CLIENT_NAME = 'fb85b097-d07a-42fd-b0e5-f701a81082a3';
     const PRIVATE_CLIENT_REDIRECT_URI = 'http://localhost';
 
@@ -53,14 +53,14 @@ class AppFixtures extends Fixture
         $client->setIdentifier(self::PUBLIC_CLIENT_IDENTIFIER);
         $client->setRedirectUri(self::PUBLIC_CLIENT_REDIRECT_URI);
         $client->setIsConfidential(false);
-        $client->setGrantTypes([GrantTypes::CLIENT_CREDENTIALS]);
-        $client->setScopes([]);
+        $client->setGrantTypes(json_encode([GrantTypeModel::CLIENT_CREDENTIALS]));
+        $client->setScopes(json_encode([]));
         $manager->persist($client);
 
         $code = new AuthCode();
-        $code->setClient($client);
+        $code->setClientIdentifier($client->getIdentifier());
         $code->setIsRevoked(false);
-        $code->setScopes([new Scope(Scopes::OPENID)]);
+        $code->setScopes(json_encode([ScopeModel::OPENID]));
         $code->setIdentifier(self::AUTH_CODE_PUBLIC_CLIENT_IDENTIFIER);
         $code->setUserIdentifier(self::USER_IDENTIFIER);
         $code->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
@@ -73,14 +73,14 @@ class AppFixtures extends Fixture
         $client->setIdentifier(self::PRIVATE_CLIENT_IDENTIFIER);
         $client->setRedirectUri(self::PRIVATE_CLIENT_REDIRECT_URI);
         $client->setIsConfidential(true);
-        $client->setGrantTypes([
-            GrantTypes::CLIENT_CREDENTIALS,
-            GrantTypes::PASSWORD,
-            GrantTypes::AUTHORIZATION_CODE,
-            GrantTypes::REFRESH_TOKEN,
-            GrantTypes::IMPLICIT,
-        ]);
-        $client->setScopes([]);
+        $client->setGrantTypes(json_encode([
+            GrantTypeModel::CLIENT_CREDENTIALS,
+            GrantTypeModel::PASSWORD,
+            GrantTypeModel::AUTHORIZATION_CODE,
+            GrantTypeModel::REFRESH_TOKEN,
+            GrantTypeModel::IMPLICIT,
+        ]));
+        $client->setScopes(json_encode([]));
         $manager->persist($client);
 
         $secret = new ClientSecret();
@@ -89,11 +89,17 @@ class AppFixtures extends Fixture
         $secret->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
         $manager->persist($secret);
 
+        $secret = new ClientSecret();
+        $secret->setClient($client);
+        $secret->setSecret(PasswordHashGenerator::create(self::PRIVATE_CLIENT_EXPIRED_SECRET));
+        $secret->setExpiryDateTime((new \DateTimeImmutable())->modify('-1 day'));
+        $manager->persist($secret);
+
         // auth code
         $code = new AuthCode();
-        $code->setClient($client);
+        $code->setClientIdentifier($client->getIdentifier());
         $code->setIsRevoked(false);
-        $code->setScopes([new Scope(Scopes::OPENID)]);
+        $code->setScopes(json_encode([ScopeModel::OPENID]));
         $code->setIdentifier(self::AUTH_CODE_PRIVATE_CLIENT_IDENTIFIER);
         $code->setUserIdentifier(self::USER_IDENTIFIER);
         $code->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
@@ -102,15 +108,15 @@ class AppFixtures extends Fixture
 
         // access token
         $accessToken = new AccessToken();
-        $accessToken->setClient($client);
+        $accessToken->setClientIdentifier($client->getIdentifier());
         $accessToken->setIsRevoked(false);
-        $accessToken->setScopes([new Scope(Scopes::OPENID)]);
+        $accessToken->setScopes(json_encode([ScopeModel::OPENID]));
         $accessToken->setIdentifier(self::ACCESS_TOKEN_IDENTIFIER);
         $accessToken->setUserIdentifier(self::USER_IDENTIFIER);
         $accessToken->setExpiryDateTime((new \DateTimeImmutable())->modify('+1 day'));
         $manager->persist($accessToken);
 
-        // refresh toen
+        // refresh token
         $refreshToken = new RefreshToken();
         $refreshToken->setAccessToken($accessToken);
         $refreshToken->setIsRevoked(false);

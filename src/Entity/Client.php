@@ -4,13 +4,11 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Entity\Traits\ScopeTrait;
-use App\OAuth\GrantTypes;
 use App\Repository\ClientRepository;
 use Doctrine\ORM\Mapping as ORM;
-use League\OAuth2\Server\Entities\ClientEntityInterface;
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
-class Client implements ClientEntityInterface
+class Client
 {
     use ScopeTrait;
 
@@ -80,21 +78,13 @@ class Client implements ClientEntityInterface
         $this->name = $name;
     }
 
-    public function getGrantTypes(): array
+    public function getGrantTypes(): string
     {
-        return json_decode($this->grantTypes, true);
+        return $this->grantTypes;
     }
 
-    public function setGrantTypes(array $grantTypes): void
+    public function setGrantTypes(string $grantTypes): void
     {
-        $grantTypes = array_unique(array_values($grantTypes));
-
-        foreach ($grantTypes as $grantType) {
-            if (!in_array($grantType, GrantTypes::getSupportedGrantTypes())) {
-                throw new \InvalidArgumentException(sprintf('Invalid grant type %s passed.', $grantType));
-            }
-        }
-
-        $this->grantTypes = json_encode($grantTypes);
+        $this->grantTypes = $grantTypes;
     }
 }

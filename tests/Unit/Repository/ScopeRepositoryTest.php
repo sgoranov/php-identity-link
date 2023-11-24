@@ -3,41 +3,40 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Repository;
 
-use App\Entity\Client;
-use App\Entity\Scope;
-use App\OAuth\GrantTypes;
-use App\OAuth\Scopes;
-use App\Repository\ClientRepository;
-use App\Repository\ScopeRepository;
+use App\Model\OAuth2\ClientModel;
+use App\Model\OAuth2\GrantTypeModel;
+use App\Model\OAuth2\ScopeModel;
+use App\Service\OAuth2\ClientService;
+use App\Service\OAuth2\ScopeService;
 use App\Tests\Fixtures\AppFixtures;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ScopeRepositoryTest extends KernelTestCase
 {
-    private static ClientRepository $clientRepository;
-    private static ScopeRepository $scopeRepository;
+    private static ClientService $clientRepository;
+    private static ScopeService $scopeRepository;
 
     public static function setUpBeforeClass(): void
     {
         $container = static::getContainer();
-        self::$clientRepository = $container->get(ClientRepository::class);
-        self::$scopeRepository = $container->get(ScopeRepository::class);
+        self::$clientRepository = $container->get(ClientService::class);
+        self::$scopeRepository = $container->get(ScopeService::class);
     }
 
     public function testFinalizeScopes(): void
     {
-        /** @var Client $client */
+        /** @var ClientModel $client */
         $client = self::$clientRepository->getClientEntity(AppFixtures::PRIVATE_CLIENT_IDENTIFIER);
         $client->setScopes([
-            new Scope(Scopes::PROFILE),
-            new Scope(Scopes::OPENID),
+            new ScopeModel(ScopeModel::PROFILE),
+            new ScopeModel(ScopeModel::OPENID),
         ]);
 
-        $scopes = self::$scopeRepository->finalizeScopes([new Scope(Scopes::PROFILE)],
-            GrantTypes::CLIENT_CREDENTIALS, $client);
+        $scopes = self::$scopeRepository->finalizeScopes([new ScopeModel(ScopeModel::PROFILE)],
+            GrantTypeModel::CLIENT_CREDENTIALS, $client);
         $this->assertCount(1, $scopes);
 
         list($scope) = $scopes;
-        $this->assertEquals(Scopes::PROFILE, (string) $scope);
+        $this->assertEquals(ScopeModel::PROFILE, (string) $scope);
     }
 }

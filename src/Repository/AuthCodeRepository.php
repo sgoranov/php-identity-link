@@ -7,8 +7,6 @@ use App\Entity\AuthCode;
 use App\Repository\Trait\RevocationTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
-use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<AuthCode>
@@ -18,7 +16,7 @@ use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
  * @method AuthCode[]    findAll()
  * @method AuthCode[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class AuthCodeRepository extends ServiceEntityRepository implements AuthCodeRepositoryInterface
+class AuthCodeRepository extends ServiceEntityRepository
 {
     use RevocationTrait;
 
@@ -27,25 +25,14 @@ class AuthCodeRepository extends ServiceEntityRepository implements AuthCodeRepo
         parent::__construct($registry, AuthCode::class);
     }
 
-    public function getNewAuthCode(): AuthCode
+    public function getByIdentifier(string $codeId): AuthCode
     {
-        return new AuthCode();
-    }
+        $result = $this->findOneBy(['identifier' => $codeId]);
 
-    public function persistNewAuthCode(AuthCodeEntityInterface $authCodeEntity)
-    {
-        $entityManager = $this->getEntityManager();
-        $entityManager->persist($authCodeEntity);
-        $entityManager->flush();
-    }
+        if ($result === null) {
+            throw new \Exception('Code not found');
+        }
 
-    public function revokeAuthCode($codeId)
-    {
-        $this->revoke($codeId);
-    }
-
-    public function isAuthCodeRevoked($codeId): bool
-    {
-        return $this->isRevoked($codeId);
+        return $result;
     }
 }

@@ -4,13 +4,8 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Client;
-use App\Entity\ClientSecret;
-use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
-use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<Client>
@@ -20,56 +15,21 @@ use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
  * @method Client[]    findAll()
  * @method Client[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ClientRepository extends ServiceEntityRepository implements ClientRepositoryInterface
+class ClientRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Client::class);
     }
 
-    public function getClientEntity($clientIdentifier): ?ClientEntityInterface
+    public function getByIdentifier(string $identifier): Client
     {
-        return $this->findOneBy(['identifier' => $clientIdentifier]);
-    }
+        $result = $this->findOneBy(['identifier' => $identifier]);
 
-    public function validateClient($clientIdentifier, $clientSecret, $grantType): bool
-    {
-        $client = $this->findOneBy(['identifier' => $clientIdentifier]);
-        if (is_null($client)) {
-            throw new \InvalidArgumentException(sprintf('Client with identifier %s was not found.', $clientIdentifier));
+        if ($result === null) {
+            throw new \Exception('Not found');
         }
 
-        if ($grantType !== null && !in_array($grantType, $client->getGrantTypes(), true)) {
-            return false;
-        }
-
-        if ($clientSecret === null) {
-
-            if ($client->isConfidential()) {
-                return false;
-            }
-
-            return  true;
-        }
-
-        // check client secret
-        $result = $this->createQueryBuilder('t')
-            ->select('s')
-            ->innerJoin(ClientSecret::class, 's', Join::WITH, 's.client = t.id')
-            ->andWhere('s.expiryDateTime >= :now')
-            ->setParameter('now', new DateTime())
-            ->getQuery()
-            ->getResult()
-        ;
-
-        /** @var ClientSecret $secret */
-        foreach ($result as $secret) {
-
-            if (password_verify($clientSecret, $secret->getSecret())) {
-                return true;
-            }
-        }
-
-        return false;
+        return $result;
     }
 }

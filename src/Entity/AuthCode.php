@@ -8,12 +8,9 @@ use App\Entity\Traits\ScopeTrait;
 use App\Repository\AuthCodeRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
-use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Entities\Traits\AuthCodeTrait;
 
 #[ORM\Entity(repositoryClass: AuthCodeRepository::class)]
-class AuthCode implements AuthCodeEntityInterface
+class AuthCode
 {
     use ScopeTrait, RevocationTrait;
 
@@ -29,8 +26,8 @@ class AuthCode implements AuthCodeEntityInterface
     #[ORM\Column]
     private string $userIdentifier;
 
-    #[ORM\ManyToOne(targetEntity: Client::class)]
-    private Client $client;
+    #[ORM\Column]
+    private string $clientIdentifier;
 
     #[ORM\Column]
     private DateTimeImmutable $expiryDateTime;
@@ -74,14 +71,14 @@ class AuthCode implements AuthCodeEntityInterface
         return $this->userIdentifier;
     }
 
-    public function getClient(): Client
+    public function getClientIdentifier(): string
     {
-        return $this->client;
+        return $this->clientIdentifier;
     }
 
-    public function setClient(ClientEntityInterface $client): void
+    public function setClientIdentifier(string $clientIdentifier): void
     {
-        $this->client = $client;
+        $this->clientIdentifier = $clientIdentifier;
     }
 
     public function getRedirectUri(): ?string

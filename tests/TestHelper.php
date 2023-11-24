@@ -30,43 +30,36 @@ namespace App\Tests;
 
 use App\Entity\AuthCode;
 use App\Entity\RefreshToken;
-use App\Entity\Scope;
+use App\Model\OAuth2\ScopeModel;
+use App\Repository\ClientRepository;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\CryptoException;
 use Defuse\Crypto\Key;
 use League\OAuth2\Server\CryptKey;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\NullOutput;
 
 final class TestHelper
 {
-    public const ENCRYPTION_KEY = '4kc8njQtPUazmzZGNt2Wh1rGO6bUFXatJQTnlKimX1Y=';
+    public const ENCRYPTION_KEY_PATH = __DIR__ . '/resources/encryption.key';
     public const PRIVATE_KEY_PATH = __DIR__ . '/resources/private.key';
     public const PUBLIC_KEY_PATH = __DIR__ . '/resources/public.key';
 
-    private string $encryptionKeyPath;
-    private string $privateKeyPath;
-
-    public function __construct(string $encryptionKeyPath, string $privateKeyPath)
+    public function __construct(readonly ClientRepository $clientRepository)
     {
-        $this->encryptionKeyPath = $encryptionKeyPath;
-        $this->privateKeyPath = $privateKeyPath;
     }
 
     public function generateEncryptedPayload(RefreshToken $refreshToken): ?string
     {
         $payload = json_encode([
-            'client_id' => $refreshToken->getAccessToken()->getClient()->getIdentifier(),
+            'client_id' => $refreshToken->getAccessToken()->getClientIdentifier(),
             'refresh_token_id' => $refreshToken->getIdentifier(),
             'access_token_id' => $refreshToken->getAccessToken()->getIdentifier(),
-            'scopes' => array_map('strval', $refreshToken->getAccessToken()->getScopes()),
+            'scopes' => ScopeModel::convertToStringArray($refreshToken->getAccessToken()->getScopes()),
             'user_id' => $refreshToken->getAccessToken()->getUserIdentifier(),
             'expire_time' => $refreshToken->getExpiryDateTime()->getTimestamp(),
         ]);
 
         try {
-            return Crypto::encrypt($payload, Key::loadFromAsciiSafeString(file_get_contents($this->encryptionKeyPath)));
+            return Crypto::encrypt($payload, Key::loadFromAsciiSafeString(file_get_contents(self::ENCRYPTION_KEY_PATH)));
         } catch (CryptoException $e) {
             return null;
         }
@@ -74,15 +67,13 @@ final class TestHelper
 
     public function generateEncryptedAuthCodePayload(AuthCode $authCode): ?string
     {
-        $scopes = array_map(function (Scope $scope): string {
-            return $scope->getIdentifier();
-        }, $authCode->getScopes());
+        $client = $this->clientRepository->getByIdentifier($authCode->getClientIdentifier());
 
         $payload = json_encode([
-            'client_id' => $authCode->getClient()->getIdentifier(),
-            'redirect_uri' => $authCode->getClient()->getRedirectUri(),
+            'client_id' => $authCode->getClientIdentifier(),
+            'redirect_uri' => $client->getRedirectUri(),
             'auth_code_id' => $authCode->getIdentifier(),
-            'scopes' => $scopes,
+            'scopes' => ScopeModel::convertToStringArray($authCode->getScopes()),
             'user_id' => $authCode->getUserIdentifier(),
             'expire_time' => $authCode->getExpiryDateTime()->getTimestamp(),
             'code_challenge' => null,
@@ -90,7 +81,7 @@ final class TestHelper
         ]);
 
         try {
-            return Crypto::encrypt($payload, Key::loadFromAsciiSafeString(file_get_contents($this->encryptionKeyPath)));
+            return Crypto::encrypt($payload, Key::loadFromAsciiSafeString(file_get_contents(self::ENCRYPTION_KEY_PATH)));
         } catch (CryptoException $e) {
             return null;
         }
@@ -99,7 +90,7 @@ final class TestHelper
     public function decryptPayload(string $payload): ?string
     {
         try {
-            return Crypto::decrypt($payload, Key::loadFromAsciiSafeString(file_get_contents($this->encryptionKeyPath)));
+            return Crypto::decrypt($payload, Key::loadFromAsciiSafeString(file_get_contents(self::ENCRYPTION_KEY_PATH)));
         } catch (CryptoException $e) {
             return null;
         }

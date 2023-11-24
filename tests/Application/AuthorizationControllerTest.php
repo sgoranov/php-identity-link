@@ -127,7 +127,7 @@ class AuthorizationControllerTest extends WebTestCase
         $authCode = $authCodeRepository->findOneBy(['identifier' => $payload['auth_code_id']]);
 
         $this->assertInstanceOf(AuthCode::class, $authCode);
-        $this->assertSame(AppFixtures::PUBLIC_CLIENT_IDENTIFIER, $authCode->getClient()->getIdentifier());
+        $this->assertSame(AppFixtures::PUBLIC_CLIENT_IDENTIFIER, $authCode->getClientIdentifier());
     }
 
     public function testAuthCodeRequestWithPublicClientWithoutCodeChallengeWhenTheChallengeIsRequiredForPublicClients(): void

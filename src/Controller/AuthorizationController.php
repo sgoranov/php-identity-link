@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\ModelMapper\UserMapper;
 use App\Repository\UserRepository;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
@@ -24,6 +25,7 @@ class AuthorizationController extends AbstractController
         readonly HttpMessageFactoryInterface $httpMessageFactory,
         readonly ResponseFactoryInterface $responseFactory,
         readonly UserRepository $userRepository,
+        readonly UserMapper $userMapper,
     )
     {
     }
@@ -44,10 +46,12 @@ class AuthorizationController extends AbstractController
             }
 
             $user = $this->userRepository->getUserById($this->getUser()->getUserIdentifier());
-            $authRequest->setUser($user);
+
+            $authRequest->setUser($this->userMapper->toModel($user));
             $authRequest->setAuthorizationApproved(true);
 
             $response = $this->server->completeAuthorizationRequest($authRequest, $serverResponse);
+
         } catch (OAuthServerException $e) {
             $response = $e->generateHttpResponse($serverResponse);
         }

@@ -7,11 +7,9 @@ use App\Entity\Traits\RevocationTrait;
 use App\Repository\RefreshTokenRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
-use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
 
 #[ORM\Entity(repositoryClass: RefreshTokenRepository::class)]
-class RefreshToken implements RefreshTokenEntityInterface
+class RefreshToken
 {
     use RevocationTrait;
 
@@ -55,7 +53,7 @@ class RefreshToken implements RefreshTokenEntityInterface
         $this->expiryDateTime = $dateTime;
     }
 
-    public function setAccessToken(AccessTokenEntityInterface $accessToken)
+    public function setAccessToken(AccessToken $accessToken)
     {
         $this->accessToken = $accessToken;
     }

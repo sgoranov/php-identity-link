@@ -3,12 +3,11 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\AccessToken;
 use App\Entity\RefreshToken;
 use App\Repository\Trait\RevocationTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
-use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<RefreshToken>
@@ -18,7 +17,7 @@ use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
  * @method RefreshToken[]    findAll()
  * @method RefreshToken[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class RefreshTokenRepository extends ServiceEntityRepository implements RefreshTokenRepositoryInterface
+class RefreshTokenRepository extends ServiceEntityRepository
 {
     use RevocationTrait;
 
@@ -27,28 +26,14 @@ class RefreshTokenRepository extends ServiceEntityRepository implements RefreshT
         parent::__construct($registry, RefreshToken::class);
     }
 
-    public function getNewRefreshToken(): RefreshToken
+    public function getByIdentifier(string $tokenId): RefreshToken
     {
-        $token = new RefreshToken();
-        $token->setIsRevoked(false);
+        $result = $this->findOneBy(['identifier' => $tokenId]);
 
-        return $token;
-    }
+        if ($result === null) {
+            throw new \Exception('Token not found');
+        }
 
-    public function persistNewRefreshToken(RefreshTokenEntityInterface $refreshTokenEntity)
-    {
-        $entityManager = $this->getEntityManager();
-        $entityManager->persist($refreshTokenEntity);
-        $entityManager->flush();
-    }
-
-    public function revokeRefreshToken($tokenId)
-    {
-        $this->revoke($tokenId);
-    }
-
-    public function isRefreshTokenRevoked($tokenId): bool
-    {
-        return $this->isRevoked($tokenId);
+        return $result;
     }
 }

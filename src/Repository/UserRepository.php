@@ -6,8 +6,6 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Repositories\UserRepositoryInterface;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -17,7 +15,7 @@ use League\OAuth2\Server\Repositories\UserRepositoryInterface;
  * @method User[]    findAll()
  * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserRepository extends ServiceEntityRepository implements UserRepositoryInterface
+class UserRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -41,10 +39,5 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         }
 
         return null;
-    }
-
-    public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity): ?User
-    {
-        return $this->getUser($username, $password);
     }
 }

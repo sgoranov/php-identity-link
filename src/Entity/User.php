@@ -5,11 +5,10 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
-use League\OAuth2\Server\Entities\UserEntityInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User implements UserEntityInterface
+class User
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]

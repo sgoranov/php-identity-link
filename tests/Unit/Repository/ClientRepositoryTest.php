@@ -3,19 +3,19 @@ declare(strict_types=1);
 
 namespace  App\Tests\Unit\Repository;
 
-use App\OAuth\GrantTypes;
-use App\Repository\ClientRepository;
+use App\Model\OAuth2\GrantTypeModel;
+use App\Service\OAuth2\ClientService;
 use App\Tests\Fixtures\AppFixtures;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ClientRepositoryTest extends KernelTestCase
 {
-    private static ClientRepository $clientRepository;
+    private static ClientService $clientRepository;
 
     public static function setUpBeforeClass(): void
     {
         $container = static::getContainer();
-        self::$clientRepository = $container->get(ClientRepository::class);
+        self::$clientRepository = $container->get(ClientService::class);
     }
 
     public function testGetClientByIdentifier(): void
@@ -32,15 +32,39 @@ class ClientRepositoryTest extends KernelTestCase
         $result = self::$clientRepository->validateClient(
             AppFixtures::PUBLIC_CLIENT_IDENTIFIER,
             null,
-            GrantTypes::AUTHORIZATION_CODE
+            GrantTypeModel::AUTHORIZATION_CODE
         );
         $this->assertFalse($result);
 
         $result = self::$clientRepository->validateClient(
             AppFixtures::PUBLIC_CLIENT_IDENTIFIER,
             null,
-            GrantTypes::CLIENT_CREDENTIALS
+            GrantTypeModel::CLIENT_CREDENTIALS
         );
         $this->assertTrue($result);
+    }
+
+    public function testPrivateClientValidity(): void
+    {
+        $result = self::$clientRepository->validateClient(
+            AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
+            'wrong_password',
+            GrantTypeModel::AUTHORIZATION_CODE
+        );
+        $this->assertFalse($result);
+
+        $result = self::$clientRepository->validateClient(
+            AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
+            AppFixtures::PRIVATE_CLIENT_SECRET,
+            GrantTypeModel::AUTHORIZATION_CODE
+        );
+        $this->assertTrue($result);
+
+        $result = self::$clientRepository->validateClient(
+            AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
+            AppFixtures::PRIVATE_CLIENT_EXPIRED_SECRET,
+            GrantTypeModel::AUTHORIZATION_CODE
+        );
+        $this->assertFalse($result);
     }
 }

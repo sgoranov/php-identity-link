@@ -1,18 +1,18 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Service\OAuth2;
 
 use App\Entity\Client;
-use App\Entity\Scope;
+use App\Model\OAuth2\ScopeModel;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
 
-class ScopeRepository implements ScopeRepositoryInterface
+class ScopeService implements ScopeRepositoryInterface
 {
-    public function getScopeEntityByIdentifier($identifier): Scope
+    public function getScopeEntityByIdentifier($identifier): ScopeModel
     {
-        return new Scope($identifier);
+        return new ScopeModel($identifier);
     }
 
     /**

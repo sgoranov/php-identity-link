@@ -3,11 +3,12 @@ declare(strict_types=1);
 
 namespace App\OAuth;
 
-use App\Repository\AccessTokenRepository;
-use App\Repository\AuthCodeRepository;
-use App\Repository\ClientRepository;
-use App\Repository\RefreshTokenRepository;
-use App\Repository\ScopeRepository;
+use App\Service\OAuth2\AccessTokenService;
+use App\Service\OAuth2\AuthCodeService;
+use App\Service\OAuth2\ClientService;
+use App\Service\OAuth2\RefreshTokenService;
+use App\Service\OAuth2\ScopeService;
+use App\Service\OAuth2\UserService;
 use Defuse\Crypto\Key;
 use League\Event\Emitter;
 use League\OAuth2\Server\AuthorizationServer;
@@ -16,7 +17,6 @@ use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\ImplicitGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
-use League\OAuth2\Server\Repositories\UserRepositoryInterface;
 
 class AuthorizationServerFactory
 {
@@ -41,13 +41,13 @@ class AuthorizationServerFactory
     private bool $enableImplicitGrant;
 
     public function __construct(
-        readonly AccessTokenRepository $accessTokenRepository,
-        readonly AuthCodeRepository $authCodeRepository,
-        readonly ClientRepository $clientRepository,
-        readonly RefreshTokenRepository $refreshTokenRepository,
-        readonly ScopeRepository $scopeRepository,
-        readonly UserRepositoryInterface $userRepository,
-        readonly Emitter $emitter,
+        readonly AccessTokenService  $accessTokenRepository,
+        readonly AuthCodeService     $authCodeRepository,
+        readonly ClientService       $clientRepository,
+        readonly RefreshTokenService $refreshTokenRepository,
+        readonly ScopeService        $scopeRepository,
+        readonly UserService         $userRepository,
+        readonly Emitter             $emitter,
     )
     {
     }

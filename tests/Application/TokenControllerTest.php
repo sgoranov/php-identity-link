@@ -28,7 +28,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Application;
 
-use App\OAuth\GrantTypes;
+use App\Model\OAuth2\GrantTypeModel;
 use App\Repository\AuthCodeRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Tests\Fixtures\AppFixtures;
@@ -104,7 +104,7 @@ final class TokenControllerTest extends WebTestCase
         $client->request('POST', $router->generate('oauth2_token'), [
             'client_id' => AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
             'client_secret' => AppFixtures::PRIVATE_CLIENT_SECRET,
-            'grant_type' => GrantTypes::PASSWORD,
+            'grant_type' => GrantTypeModel::PASSWORD,
             'username' => AppFixtures::USER_IDENTIFIER,
             'password' => AppFixtures::USER_PASSWORD,
         ]);
@@ -134,6 +134,7 @@ final class TokenControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $eventDispatcher = $client->getContainer()->get(EventDispatcherInterface::class);
+        /** @var TestHelper $testHelper */
         $testHelper = $client->getContainer()->get(TestHelper::class);
         $router = $client->getContainer()->get(RouterInterface::class);
 
@@ -158,7 +159,7 @@ final class TokenControllerTest extends WebTestCase
         $client->request('POST', $router->generate('oauth2_token'), [
             'client_id' => AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
             'client_secret' => AppFixtures::PRIVATE_CLIENT_SECRET,
-            'grant_type' => GrantTypes::REFRESH_TOKEN,
+            'grant_type' => GrantTypeModel::REFRESH_TOKEN,
             'refresh_token' => $testHelper->generateEncryptedPayload($refreshToken),
         ]);
 
@@ -178,7 +179,7 @@ final class TokenControllerTest extends WebTestCase
         $this->assertTrue($wasRequestAccessTokenEventDispatched);
         $this->assertTrue($wasRequestRefreshTokenEventDispatched);
 
-        $this->assertSame($refreshToken->getAccessToken()->getClient()->getIdentifier(), $accessToken->getClient()->getIdentifier());
+        $this->assertSame($refreshToken->getAccessToken()->getClientIdentifier(), $accessToken->getClient()->getIdentifier());
         $this->assertSame($accessToken->getIdentifier(), $refreshTokenEntity->getAccessToken()->getIdentifier());
     }
 
@@ -195,7 +196,7 @@ final class TokenControllerTest extends WebTestCase
         $client->request('POST', $router->generate('oauth2_token'), [
             'client_id' => AppFixtures::PRIVATE_CLIENT_IDENTIFIER,
             'client_secret' => AppFixtures::PRIVATE_CLIENT_SECRET,
-            'grant_type' => GrantTypes::AUTHORIZATION_CODE,
+            'grant_type' => GrantTypeModel::AUTHORIZATION_CODE,
             'redirect_uri' => AppFixtures::PRIVATE_CLIENT_REDIRECT_URI,
             'code' => $testHelper->generateEncryptedAuthCodePayload($authCode),
         ]);
@@ -240,7 +241,7 @@ final class TokenControllerTest extends WebTestCase
 
         $client->request('POST', $router->generate('oauth2_token'), [
             'client_id' => AppFixtures::PUBLIC_CLIENT_IDENTIFIER,
-            'grant_type' => GrantTypes::AUTHORIZATION_CODE,
+            'grant_type' => GrantTypeModel::AUTHORIZATION_CODE,
             'redirect_uri' => AppFixtures::PUBLIC_CLIENT_REDIRECT_URI,
             'code' => $testHelper->generateEncryptedAuthCodePayload($authCode),
         ]);
@@ -261,7 +262,7 @@ final class TokenControllerTest extends WebTestCase
         $this->assertTrue($wasRequestAccessTokenEventDispatched);
         $this->assertTrue($wasRequestRefreshTokenEventDispatched);
 
-        $this->assertSame($authCode->getClient()->getIdentifier(), $accessToken->getClient()->getIdentifier());
+        $this->assertSame($authCode->getClientIdentifier(), $accessToken->getClient()->getIdentifier());
         $this->assertSame($authCode->getUserIdentifier(), $accessToken->getUserIdentifier());
         $this->assertSame($accessToken->getIdentifier(), $refreshToken->getAccessToken()->getIdentifier());
     }
@@ -301,7 +302,7 @@ final class TokenControllerTest extends WebTestCase
         $client->request('POST', $router->generate('oauth2_token'), [
             'client_id' => 'foo',
             'client_secret' => 'wrong',
-            'grant_type' => GrantTypes::CLIENT_CREDENTIALS,
+            'grant_type' => GrantTypeModel::CLIENT_CREDENTIALS,
         ]);
 
         $response = $client->getResponse();

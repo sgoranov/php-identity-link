@@ -22,6 +22,7 @@ php bin/console -e dev doctrine:migrations:migrate
 php bin/console -e dev -n doctrine:fixtures:load
 
 # PHPUnit setup
+rm -rf data/database.sqlite
 mkdir -p data
 touch data/database.sqlite
 php bin/console -e test doctrine:database:create

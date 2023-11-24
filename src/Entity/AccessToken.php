@@ -8,14 +8,11 @@ use App\Entity\Traits\ScopeTrait;
 use App\Repository\AccessTokenRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
-use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 
 #[ORM\Entity(repositoryClass: AccessTokenRepository::class)]
-class AccessToken implements AccessTokenEntityInterface
+class AccessToken
 {
-    use AccessTokenTrait, ScopeTrait, RevocationTrait;
+    use ScopeTrait, RevocationTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
@@ -29,8 +26,8 @@ class AccessToken implements AccessTokenEntityInterface
     #[ORM\Column(nullable: true)]
     private ?string $userIdentifier;
 
-    #[ORM\ManyToOne(targetEntity: Client::class)]
-    private Client $client;
+    #[ORM\Column]
+    private string $clientIdentifier;
 
     #[ORM\Column]
     private DateTimeImmutable $expiryDateTime;
@@ -71,13 +68,13 @@ class AccessToken implements AccessTokenEntityInterface
         return $this->userIdentifier;
     }
 
-    public function getClient(): Client
+    public function getClientIdentifier(): string
     {
-        return $this->client;
+        return $this->clientIdentifier;
     }
 
-    public function setClient(ClientEntityInterface $client): void
+    public function setClientIdentifier(string $clientIdentifier): void
     {
-        $this->client = $client;
+        $this->clientIdentifier = $clientIdentifier;
     }
 }
