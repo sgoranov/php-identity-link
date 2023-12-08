@@ -5,11 +5,11 @@ services:
     container_name: php-identity-link
     privileged: true
     build:
-      context: ${SOURCE_DIR}
+      context: ${PHP_IDENTITY_LINK_SOURCE_DIR}
     ports:
       - 9000:80
     volumes:
-      - ${SOURCE_DIR}:/var/www
+      - ${PHP_IDENTITY_LINK_SOURCE_DIR}:/var/www
     extra_hosts:
       - host.docker.internal:${HOST_GW:-host-gateway}
     depends_on:
@@ -22,7 +22,7 @@ services:
     image: postgres:10
     restart: always
     ports:
-      - "9001:5432"
+      - "9006:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
@@ -45,29 +45,10 @@ services:
       driver: 'none'  # disable saving logs
     ports:
       - 9025:1025 # smtp server
-      - 9006:8025 # web ui
+      - 9026:8025 # web ui
     networks:
       - my-network
-
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-15}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
 
 networks:
   my-network:
     driver: bridge
-
-volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###

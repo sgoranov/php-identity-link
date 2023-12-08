@@ -7,8 +7,8 @@ echo "$DEFAULT_ROUTE localhost.container.com" >> /etc/hosts
 cd /var/www/
 
 # Run composer install and replace the correct configuration
-# rm -rf vendor && \
-composer install --no-scripts && \
+# rm -rf vendor
+composer install --no-scripts
 
 # Database setup
 export PGHOST=database-server
